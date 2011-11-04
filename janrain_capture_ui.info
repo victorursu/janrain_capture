@@ -1,0 +1,11 @@
+; $Id$
+name = Janrain Capture UI
+description = Adds UI elements necessary for integrating Janrain Capture
+package = Janrain Capture
+core = 6.x
+version = "6.x-1.0"
+core = "6.x"
+project = "janrain_capture"
+
+dependencies[] = jquery_update
+dependencies[] = janrain_capture

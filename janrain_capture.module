@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * @file
+ *
+ * This module implements authentication endpoints for Janrain Capture
+ *
+ * @see http://www.janrain.com/products/capture
+ */
+require_once('janrain_capture.api.inc');
+
+/**
+ * Implementation of hook_menu()
+ */
+function janrain_capture_menu() {
+
+  $items['janrain_capture/oauth'] = array(
+    'title' => 'Capture Oauth Receiver',
+    'page callback' => 'janrain_capture_oauth',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'janrain_capture.pages.inc',
+    'module' => 'janrain_capture'
+  );
+  
+  $items['janrain_capture/profile'] = array(
+    'title' => 'Capture Profile',
+    'page callback' => 'janrain_capture_profile',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'janrain_capture.pages.inc',
+    'module' => 'janrain_capture'
+  );
+
+  $items['janrain_capture/profile_sync'] = array(
+    'title' => 'Capture Profile Receiver',
+    'page callback' => 'janrain_capture_profile_sync',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'janrain_capture.pages.inc',
+    'module' => 'janrain_capture'
+  );
+  
+  $items['janrain_capture/resend_verification_email'] = array(
+    'title' => 'Capture Verification Email Resent',
+    'page callback' => 'janrain_capture_resend_verification_email',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'janrain_capture.pages.inc',
+    'module' => 'janrain_capture'
+  );
+
+  $items['admin/settings/janrain_capture'] = array(
+    'title' => 'Janrain Capture',
+    'description' => 'Configure settings for Janrain Capture module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('janrain_capture_settings'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'janrain_capture.admin.inc',
+    'module' => 'janrain_capture'
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function janrain_capture_theme() {
+  return array(
+    'janrain_capture_oauth' => array(
+      'template' => 'janrain_capture_oauth'
+    ),
+  );
+}

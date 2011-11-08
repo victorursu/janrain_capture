@@ -5,6 +5,7 @@
  * User page callbacks for the janrain_capture module.
  */
 function janrain_capture_oauth() {
+  global $user;
   $token = isset($_REQUEST['code']) ? $_REQUEST['code'] : '';
   $from_sso = isset($_REQUEST['from_sso']) ? $_REQUEST['from_sso'] : '';
   $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : '';
@@ -12,7 +13,10 @@ function janrain_capture_oauth() {
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
 
-  if ($token) {
+  if ($user->uid) {
+    drupal_set_message(t("You're already signed in!"), 'error');
+  }
+  elseif ($token) {
     $uri_opts = ($from_sso && $origin) ? array('query' => array('from_sso' => 'true', 'origin' => $origin), 'absolute' => true) : array('absolute' => true);
 
     $redirect_uri = url('janrain_capture/oauth', $uri_opts);

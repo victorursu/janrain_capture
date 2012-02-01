@@ -63,14 +63,6 @@ function janrain_capture_settings() {
       : '',
     '#description' => t('Your Janrain CaptureUI Address (defaults to Janrain Capture Address)')
   );
-  $form['janrain_capture_optional']['capture_application_id'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Janrain Capture Application ID'),
-    '#default_value' => !empty($janrain_capture_optional['capture_application_id'])
-      ? $janrain_capture_optional['capture_application_id']
-      : '',
-    '#description' => t('Your Janrain Capture Application ID (not required)')
-  );
   
   $janrain_capture_fields = variable_get('janrain_capture_fields', array());
   $form['janrain_capture_fields'] = array(

@@ -113,8 +113,7 @@ function janrain_capture_oauth() {
           . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
           . '/oauth/resend_verification_email?access_token='
           . $_SESSION['janrain_capture_access_token'] . '&redirect_uri='
-          . urlencode(url('janrain_capture/resend_verification_email', array('absolute' => true)))
-          . (!empty($janrain_capture_optional['capture_application_id']) ? '&application_id=' . $janrain_capture_optional['capture_application_id'] : '');
+          . urlencode(url('janrain_capture/resend_verification_email', array('absolute' => true)));
         drupal_set_message(t('Your email address has not yet been verified. Please check your email and try again. <a href="@resend-link">Click Here</a> to have this email resent.', array('@resend-link' => $resend_link)), 'error');
       }
 
@@ -148,8 +147,7 @@ function janrain_capture_profile() {
       . '/oauth/profile' . $method . '?flags=stay_in_window&access_token='
       . $_SESSION['janrain_capture_access_token']
       . '&callback=closeProfileEditor&xd_receiver='
-      . urlencode(url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html')
-      . (!empty($janrain_capture_optional['capture_application_id']) ? '&application_id=' . $janrain_capture_optional['capture_application_id'] : '');
+      . urlencode(url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html');
   
   header("Location: " . $url, true, 302);
   exit;
@@ -226,4 +224,15 @@ function janrain_capture_resend_verification_email() {
     drupal_set_message(t('A verification link has been sent@email-text. Please check your email.', array('@email-text' => $email_text)), 'status');
     drupal_goto();
   }
+}
+
+function janrain_capture_token_expired() {
+  global $user;
+  $tmp = NULL;
+  session_destroy();
+  user_module_invoke('logout', $tmp, $user);
+  $user = drupal_anonymous_user();
+  
+  drupal_set_message(t('Your session has expired. Please sign in again.'), 'error');
+  drupal_goto();
 }

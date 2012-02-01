@@ -60,6 +60,15 @@ function janrain_capture_menu() {
     'module' => 'janrain_capture'
   );
 
+  $items['janrain_capture/token_expired'] = array(
+    'title' => 'Capture Token Expired',
+    'page callback' => 'janrain_capture_token_expired',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'janrain_capture.pages.inc',
+    'module' => 'janrain_capture'
+  );
+
   return $items;
 }
 

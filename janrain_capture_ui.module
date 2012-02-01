@@ -18,8 +18,7 @@ if (!empty($janrain_capture_main['capture_address']) && !empty($janrain_capture_
       . '&client_id='
       . $janrain_capture_main['capture_client_id']
       . '&xd_receiver='
-      . urlencode(url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html')
-      . (!empty($janrain_capture_optional['capture_application_id']) ? '&application_id=' . $janrain_capture_optional['capture_application_id'] : ''));
+      . urlencode(url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html');
 }
 
 /**
@@ -65,6 +64,9 @@ function janrain_capture_ui_init() {
   },
   closeRecoverPassword: function() {
     window.location.reload();
+  },
+  token_expired: function() {
+    window.location.href = "' . url('janrain_capture/token_expired') . '";
   }
 };';
   $scripts['inline'][] = 'jQuery(function($) {

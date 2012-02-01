@@ -18,7 +18,7 @@ if (!empty($janrain_capture_main['capture_address']) && !empty($janrain_capture_
       . '&client_id='
       . $janrain_capture_main['capture_client_id']
       . '&xd_receiver='
-      . urlencode(url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html');
+      . urlencode(url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html'));
 }
 
 /**

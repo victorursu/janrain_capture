@@ -22,8 +22,6 @@ class Capture_API {
     $this->args['client_secret'] = isset($janrain_capture_main['capture_client_secret'])
         ? $janrain_capture_main['capture_client_secret']
         : '';
-    if (isset($janrain_capture_optional['capture_application_id']) && !empty($janrain_capture_optional['capture_application_id']))
-      $this->args['application_id'] = $janrain_capture_optional['capture_application_id'];
     
     $this->capture_addr = !empty($janrain_capture_main['capture_address'])
       ? $janrain_capture_main['capture_address']

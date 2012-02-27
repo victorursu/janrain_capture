@@ -13,7 +13,7 @@ $janrain_capture_optional = variable_get('janrain_capture_optional', array());
 if (!empty($janrain_capture_main['capture_address']) && !empty($janrain_capture_main['capture_client_id'])) {
   define('CAPTURE_LOGIN_URL', 'https://'
       . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
-      . '/oauth/signin?response_type=code&flags=stay_in_window&recover_password_callback=closeRecoverPassword&redirect_uri='
+      . '/oauth/signin?response_type=code&flags=stay_in_window&recover_password_callback=CAPTURE.closeRecoverPassword&redirect_uri='
       . urlencode(url('janrain_capture/oauth', array('absolute' => true)))
       . '&client_id='
       . $janrain_capture_main['capture_client_id']

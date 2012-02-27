@@ -146,7 +146,7 @@ function janrain_capture_profile() {
       . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
       . '/oauth/profile' . $method . '?flags=stay_in_window&access_token='
       . $_SESSION['janrain_capture_access_token']
-      . '&callback=closeProfileEditor&xd_receiver='
+      . '&callback=CAPTURE.closeProfileEditor&xd_receiver='
       . urlencode(url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html');
   
   header("Location: " . $url, true, 302);

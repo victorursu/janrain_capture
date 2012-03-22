@@ -136,18 +136,25 @@ function janrain_capture_profile() {
   $method = isset($_GET['method']) ? $_GET['method'] : '';
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
+  $redirect_uri = url('janrain_capture/oauth', array('absolute' => true));
 
   if (time() >= $_SESSION['janrain_capture_expires_in']) {
     $api = new Capture_API();
     $api->refresh_access_token($_SESSION['janrain_capture_refresh_token']);
   }
 
+  $args = array(
+    'flags' => 'stay_in_window',
+    'client_id' => $janrain_capture_main['capture_client_id'],
+    'redirect_uri' => $redirect_uri,
+    'callback' => 'CAPTURE.closeProfileEditor',
+    'xd_receiver' => url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html',
+    'access_token' => $_SESSION['janrain_capture_access_token']
+  );
+
   $url = 'https://'
       . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
-      . '/oauth/profile' . $method . '?flags=stay_in_window&access_token='
-      . $_SESSION['janrain_capture_access_token']
-      . '&callback=CAPTURE.closeProfileEditor&xd_receiver='
-      . urlencode(url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html');
+      . '/oauth/profile' . $method . '?' . http_build_query($args, '', '&');
   
   header("Location: " . $url, true, 302);
   exit;

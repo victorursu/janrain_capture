@@ -63,6 +63,30 @@ function janrain_capture_settings() {
       : '',
     '#description' => t('Your Janrain CaptureUI Address (defaults to Janrain Capture Address)')
   );
+  $form['janrain_capture_optional']['backplane_server'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backplane Server Base URL'),
+    '#default_value' => !empty($janrain_capture_optional['backplane_server'])
+      ? $janrain_capture_optional['backplane_server']
+      : '',
+    '#description' => t('Your Backplane Server Base URL')
+  );
+  $form['janrain_capture_optional']['backplane_bus_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backplane Bus Name'),
+    '#default_value' => !empty($janrain_capture_optional['backplane_bus_name'])
+      ? $janrain_capture_optional['backplane_bus_name']
+      : '',
+    '#description' => t('Your Backplane Bus Name')
+  );
+  $form['janrain_capture_optional']['backplane_js_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backplane JS Path'),
+    '#default_value' => !empty($janrain_capture_optional['backplane_js_path'])
+      ? $janrain_capture_optional['backplane_js_path']
+      : '',
+    '#description' => t('The path to backplane.js')
+  );
   
   $janrain_capture_fields = variable_get('janrain_capture_fields', array());
   $form['janrain_capture_fields'] = array(

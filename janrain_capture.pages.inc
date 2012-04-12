@@ -243,3 +243,4 @@ function janrain_capture_token_expired() {
   drupal_set_message(t('Your session has expired. Please sign in again.'), 'error');
   drupal_goto();
 }
+

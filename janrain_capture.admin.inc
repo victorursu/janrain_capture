@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file
+ * @file janrain_capture.admin.inc
  * Admin settings menu
  */
 function janrain_capture_settings() {
@@ -156,3 +156,4 @@ function janrain_capture_settings() {
 
   return system_settings_form($form);
 }
+

@@ -11,6 +11,9 @@ class Capture_API {
   protected $args;
   protected $capture_addr;
 
+  /**
+   * Retrives API access credentials from settings.
+   */
   function __construct() {
     $janrain_capture_main = variable_get('janrain_capture_main', array());
     $janrain_capture_optional = variable_get('janrain_capture_optional', array());
@@ -131,6 +134,14 @@ class Capture_API {
     return false;
   }
   
+  /**
+   * Retrieves a new access_token/refresh_token set
+   *
+   * @param string $refresh_token
+   *   A valid refresh token from a previous access set
+   * @return boolean
+   *   Boolean success or failure
+   */
   function refresh_access_token($refresh_token) {
     $command = "oauth/token";
     $arg_array = array('refresh_token' => $refresh_token,
@@ -147,6 +158,14 @@ class Capture_API {
     return false;
   }
 
+  /**
+   * Retrives the user entity from Capture
+   *
+   * @param boolean $can_refresh
+   *   Allow this function to refresh the token set if needed
+   * @return mixed
+   *   The entity retrieved or null
+   */
   public function load_user_entity($can_refresh = true) {
     if (!$_SESSION['janrain_capture_access_token'])
       return null;
@@ -178,3 +197,4 @@ class Capture_API {
   }
 
 }
+

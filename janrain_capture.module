@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  *
@@ -6,33 +7,22 @@
  *
  * @see http://www.janrain.com/products/capture
  */
-
-
-define('JANRAIN_CAPTURE_TABLE_PROFILE_FIELDS', 'janrain_capture_profile_field');
-
-define('JANRAIN_CAPTURE_VARIABLE_MAP', 'janrain_capture_profile_fields_map');
-
-define('JANRAIN_CAPTURE_PATH_FIELDS', 'admin/config/people/janrain_capture/fields');
-define('JANRAIN_CAPTURE_PATH_FIELD_EDIT', 'admin/config/people/janrain_capture/fields/edit');
-define('JANRAIN_CAPTURE_PATH_FIELD_DELETE', 'admin/config/people/janrain_capture/fields/delete');
-define('JANRAIN_CAPTURE_PATH_FIELD_RESET', 'admin/config/people/janrain_capture/fields/reset');
-define('JANRAIN_CAPTURE_PATH_OAUTH', 'janrain_capture/oauth');
+require_once('janrain_capture.api.inc');
 
 /**
- * Implements hook_menu().
+ * Implements hook_menu()
  */
 function janrain_capture_menu() {
-  $items = array();
 
-  $items[JANRAIN_CAPTURE_PATH_OAUTH] = array(
+  $items['janrain_capture/oauth'] = array(
     'title' => 'Capture Oauth Receiver',
     'page callback' => 'janrain_capture_oauth',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
-    'module' => 'janrain_capture',
+    'module' => 'janrain_capture'
   );
-
+  
   $items['janrain_capture/profile'] = array(
     'title' => 'Capture Profile',
     'page callback' => 'janrain_capture_profile',
@@ -50,7 +40,7 @@ function janrain_capture_menu() {
     'file' => 'janrain_capture.pages.inc',
     'module' => 'janrain_capture'
   );
-
+  
   $items['janrain_capture/resend_verification_email'] = array(
     'title' => 'Capture Verification Email Resent',
     'page callback' => 'janrain_capture_resend_verification_email',
@@ -60,62 +50,14 @@ function janrain_capture_menu() {
     'module' => 'janrain_capture'
   );
 
-  $items['admin/config/people/janrain_capture'] = array(
+  $items['admin/settings/janrain_capture'] = array(
     'title' => 'Janrain Capture',
     'description' => 'Configure settings for Janrain Capture module.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_settings'),
     'access arguments' => array('administer site configuration'),
     'file' => 'janrain_capture.admin.inc',
-    'module' => 'janrain_capture',
-    'weight' => -4,
-  );
-
-  $items['admin/config/people/janrain_capture/settings'] = array(
-    'title' => 'Settings',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('janrain_capture_settings'),
-    'access arguments' => array('administer site configuration'),
-    'file' => 'janrain_capture.admin.inc',
-    'weight' => -10,
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
-
-  $items['admin/config/people/janrain_capture/mapping'] = array(
-    'title' => 'Field Mapping',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('janrain_capture_mapping_form'),
-    'access arguments' => array('administer site configuration'),
-    'file' => 'janrain_capture.admin.inc',
-    'weight' => -8,
-    'type' => MENU_LOCAL_TASK,
-  );
-
-  $items[JANRAIN_CAPTURE_PATH_FIELDS] = array(
-    'title' => 'Manage Fields',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('janrain_capture_field_form'),
-    'access arguments' => array('administer site configuration'),
-    'file' => 'janrain_capture.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-  );
-
-  $items[JANRAIN_CAPTURE_PATH_FIELD_DELETE] = array(
-    'title' => 'Delete Field',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('janrain_capture_field_delete_form'),
-    'access arguments' => array('administer site configuration'),
-    'file' => 'janrain_capture.admin.inc',
-    'type' => MENU_CALLBACK,
-  );
-
-  $items[JANRAIN_CAPTURE_PATH_FIELD_EDIT] = array(
-    'title' => 'Edit Field',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('janrain_capture_field_edit_form'),
-    'access arguments' => array('administer site configuration'),
-    'file' => 'janrain_capture.admin.inc',
-    'type' => MENU_CALLBACK,
+    'module' => 'janrain_capture'
   );
 
   $items['janrain_capture/token_expired'] = array(
@@ -127,349 +69,17 @@ function janrain_capture_menu() {
     'module' => 'janrain_capture'
   );
 
-  $items['user/janran_register'] = array(
-    'title' => 'Register User',
-    'page callback' => 'janrain_user_register',
-    'access callback' => 'user_register_access',
-    'file' => 'janrain_capture.pages.inc',
-  );
-
   return $items;
 }
 
 /**
- * Implements hook_theme().
+ * Implements hook_theme()
  */
 function janrain_capture_theme() {
-  $result = array(
-    'janrain_capture_mapping_form' => array(
-      'render element' => 'form',
-      'file' => 'janrain_capture.theme.inc',
-    ),
-  );
-
-  $result += array(
-    'janrain_capture_field_form' => array(
-      'render element' => 'form',
-      'file' => 'janrain_capture.theme.inc',
-    ),
-  );
-
-  $result += array(
+  return array(
     'janrain_capture_oauth' => array(
       'template' => 'janrain_capture_oauth'
     ),
   );
-
-  return $result;
 }
 
-/**
- * Extract path components.
- *
- * @param string $path
- * @return array
- */
-function _janrain_capture_parse_path($path) {
-  $path = trim($path, '[]');
-  $parts = explode('][', $path);
-  if (!empty($parts)) {
-    $parsed = array();
-    foreach ($parts as $part) {
-      if (is_numeric($part)) {
-        $parsed[] = intval($part);
-      }
-      elseif (preg_match("/^\'([a-z0-9_]+)\'$/i", $part, $matches)) {
-        $parsed[] = $matches[1];
-      }
-      else {
-        return NULL;
-      }
-    }
-    return $parsed;
-  }
-  else {
-    return NULL;
-  }
-}
-
-/**
- * Construct an array of options for select inputs.
- *
- * @see janrain_capture_mapping_form()
- */
-function _janrain_capture_drupal_field_options($catalog, $type) {
-  $options = array('' => '');
-
-  foreach ($catalog as $set => $set_contents) {
-    if ($type == 'set') {
-      $options[$set] = $set_contents['title'];
-    }
-    elseif ($type == 'bundle') {
-      foreach ($set_contents['bundles'] as $bundle => $bundle_contents) {
-        $options[$bundle] = $bundle_contents['title'];
-      }
-    }
-  }
-  return $options;
-}
-
-/**
- *
- */
-function _janrain_capture_drupal_field_catalog() {
-  // Add the fields defined by the Profile2 module.
-  // @todo Is there a way to only include those fields that accept text as input
-  // for now? This way it will be less error-prone experience for users.
-  if (module_exists('profile2')) {
-    $catalog['profile2'] = array(
-      'title' => 'Profile 2',
-      'bundles' => array(),
-    );
-    foreach (field_info_bundles('profile2') as $bundle_name => $bundle) {
-      $catalog['profile2']['bundles'][$bundle_name] = array(
-        'title'  => $bundle['label'],
-        'fields' => array(),
-      );
-      foreach (field_info_instances('profile2', $bundle_name) as $field_name => $field) {
-        $catalog['profile2']['bundles'][$bundle_name]['fields'][$field_name] = $field['label'];
-      }
-    }
-  }
-  // Add the fields defined by the User entity.
-  $catalog['user'] = array(
-    'title' => 'User',
-    'bundles' => array(),
-  );
-  foreach (field_info_bundles('user') as $bundle_name => $bundle) {
-    $catalog['user']['bundles'][$bundle_name] = array(
-      'title'  => $bundle['label'],
-      'fields' => array(),
-    );
-    foreach (field_info_instances('user', $bundle_name) as $field_name => $field) {
-      $catalog['user']['bundles'][$bundle_name]['fields'][$field_name] = $field['label'];
-    }
-  }
-
-  // Add special case user fields that are defined on a user by default.
-
-  return $catalog;
-}
-
-/**
- * Construct an array of options for select inputs.
- */
-function _janrain_capture_field_options() {
-  $options = array('' => '');
-  $fields = db_query("SELECT fid, title FROM {janrain_capture_profile_field}");
-  while ($field = $fields->fetchObject()) {
-    $options[$field->fid] = $field->title;
-  }
-
-  return $options;
-}
-
-/**
- * Get the mapped Capture => Drupal fields array.
- *
- * @return array
- *   An array of the Capture => Drupal fields.
- */
-function _janrain_capture_get_field_map() {
-  return variable_get(JANRAIN_CAPTURE_VARIABLE_MAP, array());
-}
-
-/**
- * Save an array of mapped Capture => Drupal fields.
- *
- * @param array
- *   An array representing the mapped Capture => Drupal fields.
- */
-function _janrain_capture_set_field_map(array $map) {
-  variable_set('janrain_capture_profile_fields_map', $map);
-}
-
-/**
- * Get a list of mappable Capture fields that are currently available.
- *
- * @param array
- *   An array of fields to be retrieved with each record.
- * @param array
- *   A simple array of conditions to filter the results by. key = value
- *
- * @return array
- *   An associatve array of records keyed by 'fid'.
- */
-function _janrain_capture_get_mappable_capture_fields($fields = array('fid', 'path'), 
-                                                      array $conditions = NULL) {
-  if (!in_array('fid', $fields))
-    $fields[] = 'fid';
-
-  $query = db_select(JANRAIN_CAPTURE_TABLE_PROFILE_FIELDS, 'f')
-    ->fields('f', $fields);
-
-  if ($conditions !== NULL && count($conditions) > 0) {
-    foreach ($conditions as $field => $value) {
-      $query->condition($field, $value);
-    }
-  }
-
-  $result = $query->execute();
-
-  return $result->fetchAllAssoc('fid', PDO::FETCH_ASSOC);
-}
-
-/**
- * Add/Update a mappable Capture field to the list of possible mappable fields.
- *
- * @param array
- *   An array containing all the fields to populate a mappable fields record.
- *     - fid: The fid of the row - optional (otherwise a new row is created)
- *     - title: The human readable title of the path
- *     - path: the human readable version of the path
- *     - parsed_path: path organized into an array.
- */
-function _janrain_capture_add_mappable_capture_field($field) {
-  if (isset($field['fid']) === FALSE) {
-    $fid = db_insert(JANRAIN_CAPTURE_TABLE_PROFILE_FIELDS)
-      ->fields(array(
-          'title' => $field['title'],
-          'path' => $field['path'],
-          'parsed_path' => serialize($field['parsed_path']),
-        ))
-      ->execute();
-    watchdog('janrain_capture', 'Janrain Capture profile field %field added with path %path.', array('%field' => $field['title'], '%path' => $field['path']), WATCHDOG_NOTICE, l(t('view'), JANRAIN_CAPTURE_PATH_FIELDS));
-  }
-  else {
-    db_update(JANRAIN_CAPTURE_TABLE_PROFILE_FIELDS)
-      ->fields(array(
-          'title' => $field['title'],
-          'path' => $field['path'],
-          'parsed_path' => serialize($field['parsed_path']),
-        ))
-      ->condition('fid', $field['fid'])
-      ->execute();
-  }
-  cache_clear_all();
-  menu_rebuild();
-}
-
-/**
- * Drop a Capture field from the mappable fields table.
- *
- * This method will drop the field from the mappable table as well as remove
- * any Capture => Drupal mapping that may use that field.
- *
- * This method clears all Drupal caches.
- *
- * @param int
- *   The Capture field id of the field to drop.
- */
-function _janrain_capture_delete_mappable_capture_field($fid) {
-  $field = _janrain_capture_get_mappable_capture_fields(array('title'), array('fid' => $fid));
-  $field = array_shift($field);
-
-  if (!$field)
-    return;
-
-  db_delete(JANRAIN_CAPTURE_TABLE_PROFILE_FIELDS)
-    ->condition('fid', $fid)
-    ->execute();
-
-  $map = _janrain_capture_get_field_map();
-  foreach ($map as $mid => $mapping) {
-    if ($mapping['fid'] == $fid) {
-      unset($map[$mid]);
-    }
-  }
-  _janrain_capture_set_field_map($map);
-
-  cache_clear_all();
-
-  watchdog('janrain_capture',
-          'Janrain Capture field %field deleted.',
-          array('%field' => $field['title']),
-          WATCHDOG_NOTICE,
-          l(t('view'), JANRAIN_CAPTURE_PATH_FIELDS));
-}
-
-/**
- * Get the configuration varaible.
- *
- * @return
- *   array - Containing the configuration options for the module.
- */
-function _janrain_capture_get_configuration() {
-  $janrain_capture_main = variable_get('janrain_capture_main', array());
-  return $janrain_capture_main;
-}
-
-/**
- * Generate a login URL to be included in an iframe.
- *
- * @return string
- *   The Capture login URL suitable to be included in an iframe.
- */
-function _janrain_capture_get_login_url() {
-  $janrain_capture_main = _janrain_capture_get_configuration();
-  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
-
-  if (!empty($janrain_capture_main['capture_address']) && !empty($janrain_capture_main['capture_client_id'])) {
-
-    $base_url  = 'https://' . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address']);
-    $base_url .= '/oauth/signin';
-    $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE, 'https' => TRUE));
-    dsm($redirect_uri);
-    $xd_uri = url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html';
-    $query = array(
-      'response_type' => 'code',
-      'flags' => 'stay_in_window',
-      'recover_password_callback' => 'closeRecoverPassword',
-      'redirect_uri' => $redirect_uri,
-      'client_id' => $janrain_capture_main['capture_client_id'],
-      'xd_receiver' => $xd_uri,
-    );
-
-    $login_url = url($base_url, array('query' => $query, 'absolute' => TRUE, 'external' => TRUE, 'https' => TRUE));
-  } else {
-    $login_url = url('user/login');
-  }
-
-  return $login_url;
-}
-
-/**
- *
- */
-function _janrain_capture_get_default_messages() {
-  $messages = array(
-    'already_signed_in' => array(
-      'title' => 'Already Signed In Message',
-      'help' => 'The message displayed to a user who is trying to login but is already logged in.',
-      'value' => 'You\'re already signed in!',
-    ),
-    'no_oauth_token' => array(
-      'title' => '',
-      'help' => '',
-      'value' => 'No OAuth token found!',
-    )
-  );
-
-  return $messages;
-}
-
-/**
- *
- */
-function _janrain_capture_get_message($key) {
-  static $messages;
-  $messages = _janrain_capture_get_default_messages();
-
-  $variable_messages = variable_get('janrain_capture_messages', $messages);
-  $value = 'No message set for key ' . $key;
-  if (array_key_exists($key, $messages)) {
-    $value = $messages[$key]['value'];
-  }
-  
-  return $value;
-}

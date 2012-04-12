@@ -216,28 +216,37 @@ function janrain_capture_ui_menu_alter(&$items) {
 }
 
 /**
- * Implementation of hook_block()
+ * Implements hook_block_info()
  */
-function janrain_capture_ui_block($op = 'list', $delta = 0, $edit = array()) {
-  global $user;
+function janrain_capture_ui_block_info() {
+  return array(
+    'janrain_capture' => array(
+      'info' => t('Janrain Capture')
+    )
+  );
+}
 
-  $content = '';
-  if ($user->uid) {
-    $content.= $_SESSION['janrain_capture_access_token'] ? '<li><a class="iframe fancy janrain_capture_anchor" href="' . url('janrain_capture/profile', array('absolute' => true)) . '">View / Edit Profile</a></li>' : '';
-    $content.= '<li><a href="' . url('logout') . '" onclick="janrain_capture_logout">Log out</a></li>';
-  }
-  else {
-    $content.= '<li><a class="iframe fancy janrain_capture_anchor janrain_capture_signin" href="' . CAPTURE_LOGIN_URL . '">Register / Sign In</a></li>';
+/**
+ * Implements hook_block_view()
+ */
+function janrain_capture_ui_block_view($delta) {
+  switch ($delta) {
+    case 'janrain_capture':
+      global $user;
+      $content = '';
+      if ($user->uid) {
+        $content.= $_SESSION['janrain_capture_access_token'] ? '<li><a class="iframe fancy janrain_capture_anchor" href="' . url('janrain_capture/profile', array('absolute' => true)) . '">View / Edit Profile</a></li>' : '';
+        $content.= '<li><a href="' . url('logout') . '" onclick="janrain_capture_logout">Log out</a></li>';
+      }
+      else {
+        $content.= '<li><a class="iframe fancy janrain_capture_anchor janrain_capture_signin" href="' . CAPTURE_LOGIN_URL . '">Register / Sign In</a></li>';
+      }
+      $block = array(
+        'subject' => t('Janrain Capture'),
+        'content' => '<ul class="menu">' . $content . '</ul>'
+      );
+      break;
   }
 
-  switch ($op) {
-    case 'list':
-      $block[0]['info'] = t('Janrain Capture');
-      break;
-    case 'view':
-      $block['subject'] = t('Janrain Capture');
-      $block['content'] = '<ul class="menu">' . $content . '</ul>';
-      break;
-  }
   return $block;
 }

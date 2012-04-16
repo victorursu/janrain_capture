@@ -75,11 +75,11 @@ function janrain_capture_menu() {
 /**
  * Implements hook_theme()
  */
-function janrain_capture_theme() {
+function janrain_capture_theme($existing, $type, $theme, $path) {
   return array(
     'janrain_capture_oauth' => array(
       'template' => 'janrain_capture_oauth'
-    ),
+    )
   );
 }
 

@@ -148,12 +148,12 @@ jQuery(function($) {
 
   if (isset($scripts['module']) && is_array($scripts['module'])) {
     foreach ($scripts['module'] as $s) {
-      drupal_add_js($s, 'module', 'footer');
+      drupal_add_js($s, 'file');
     }
   }
   if (isset($scripts['inline']) && is_array($scripts['inline'])) {
     foreach ($scripts['inline'] as $s) {
-      drupal_add_js($s, 'inline', 'footer');
+      drupal_add_js($s, 'inline');
     }
   }
   if (is_array($styles)) {
@@ -236,7 +236,7 @@ function janrain_capture_ui_block_view($delta) {
       $content = '';
       if ($user->uid) {
         $content.= $_SESSION['janrain_capture_access_token'] ? '<li><a class="iframe fancy janrain_capture_anchor" href="' . url('janrain_capture/profile', array('absolute' => true)) . '">View / Edit Profile</a></li>' : '';
-        $content.= '<li><a href="' . url('logout') . '" onclick="janrain_capture_logout">Log out</a></li>';
+        $content.= '<li><a href="' . url('user/logout') . '" onclick="janrain_capture_logout">Log out</a></li>';
       }
       else {
         $content.= '<li><a class="iframe fancy janrain_capture_anchor janrain_capture_signin" href="' . CAPTURE_LOGIN_URL . '">Register / Sign In</a></li>';

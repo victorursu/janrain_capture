@@ -53,14 +53,14 @@ class Capture_API {
     );
     if (isset($access_token))
       $headers['Authorization'] = "OAuth $access_token";
+    $options = array('headers' => $headers);
 
     if (isset($arg_array)) {
       $arg_array = array_merge($arg_array, $this->args);
-      $result = drupal_http_request($url, $headers, "POST", http_build_query($arg_array, '', '&'));
+      $options['method'] = 'POST';
+      $options['data'] = http_build_query($arg_array, '', '&');
     }
-    else {
-      $result = drupal_http_request($url, $headers);
-    }
+    $result = drupal_http_request($url, $options);
 
     if (!isset($result->data)) {
       return false;

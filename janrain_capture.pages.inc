@@ -32,40 +32,37 @@ function janrain_capture_oauth() {
     else {
       // Save profile in session
       $_SESSION['janrain_capture_profile'] = $profile;
-      
+
       $userInfo = array(
         'name' => janrain_capture_profile_field($profile),
         'mail' => $profile['result']['email'],
         'status' => 1
       );
-      
+
       $userInfo = janrain_capture_fields_array($userInfo, $profile['result']);
 
       $account = user_external_load($profile['result']['uuid']);
       $newUser = false;
 
       // No user was found with our Capture uuid.
-      if (!$account->uid) {
+      if ($account === false) {
         // Look for a local user with the same email address
-        if ($local_user = user_load(array('mail' => $profile['result']['email']))) {
+        $local_user = reset(user_load_multiple(array(), array('mail' => $profile['result']['email'])));
+        if ($local_user) {
+
           // Are we configured to match users based on email?
           if (isset($janrain_capture_fields['capture_match_email']) && $janrain_capture_fields['capture_match_email']) {
             // Check to see if this user is already mapped to a Capture uuid
-            $result = db_query("SELECT aid FROM {authmap} WHERE module = 'janrain_capture' AND uid = %d", $local_user->uid);
-            if (db_fetch_array($result)) {
+            $result = db_query("SELECT aid FROM {authmap} WHERE module = 'janrain_capture' AND uid = :uid", array(':uid' => $local_user->uid))->fetchAllKeyed();
+            if (count($result)) {
               $mapped_hook = module_invoke_all('janrain_capture_user_already_mapped');
               if (empty($mapped_hook) || !in_array(false, $mapped_hook))
                 drupal_set_message(t('A user with this email address is already mapped.'), 'error');
             }
             // Bind Capture profile data and uuid to existing user record
             else {
-              $userInfo['auth_janrain_capture'] = $profile['result']['uuid'];
-              $account = user_save($local_user, $userInfo);
-              if (!$account->uid) {
-                $mapping_failed_hook = module_invoke_all('janrain_capture_mapping_failed');
-                if (empty($mapping_failed_hook) || !in_array(false, $mapping_failed_hook))
-                  drupal_set_message(t('Failed to map to existing user.'), 'error');
-              }
+              user_set_authmaps($local_user, array("authname_janrain_capture" => $profile['result']['uuid']));
+              $account = $local_user;
             }
           }
           else {
@@ -77,13 +74,14 @@ function janrain_capture_oauth() {
         // No local users with matching email. Create a new one.
         else {
           $userInfo['pass'] = md5(time() . $profile['result']['uuid']);
-          $userInfo['auth_janrain_capture'] = $profile['result']['uuid'];
           $account = user_save(null, $userInfo);
           $newUser = true;
           if (!$account->uid) {
             $failed_create = module_invoke_all('janrain_capture_failed_create');
             if (empty($failed_create) || !in_array(false, $failed_create))
               drupal_set_message(t('Failed to create new user.'), 'error');
+          } else {
+            user_set_authmaps($account, array("authname_janrain_capture" => $profile['result']['uuid']));
           }
         }
       }
@@ -93,7 +91,7 @@ function janrain_capture_oauth() {
       }
 
       $signin = true;
-      if (!$account->uid)
+      if ($account === false)
         $signin = false;
 
       if (isset($_SESSION['janrain_capture_action'])
@@ -118,7 +116,8 @@ function janrain_capture_oauth() {
       }
 
       if ($signin) {
-        user_external_login($account);
+        $form_state['uid'] = $account->uid;
+        user_login_submit(array(), $form_state);
         module_invoke_all('janrain_capture_user_authenticated', $profile['result'], $account, $newUser);
       }
     }

@@ -169,7 +169,7 @@ jQuery(function($) {
 function janrain_capture_ui_footer() {
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
-  
+
   $scripts = '<script src="https://'
     . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
     . '/cdn/javascripts/capture_client.js" type="text/javascript"></script>';
@@ -185,10 +185,10 @@ function janrain_capture_ui_footer() {
 /**
  * Implementation of hook_form_alter()
  */
-function janrain_capture_ui_form_user_profile_form_alter(&$form, $form_state) {
+function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
   global $user;
 
-  if ($user->uid == $form['#uid']) {
+  if ($user->uid == $form['#user']->uid) {
     $form['account'] = array(
       '#type' => 'fieldset',
       '#title' => t('My Account'),
@@ -197,7 +197,7 @@ function janrain_capture_ui_form_user_profile_form_alter(&$form, $form_state) {
     );
     $form['account']['description'] = array(
       '#type' => 'markup',
-      '#value' => '<div class="form-item">
+      '#markup' => '<div class="form-item">
                     <a class="iframe fancy janrain_capture_anchor" href="' . url('janrain_capture/profile', array('absolute' => true)) . '">Edit Profile</a>
                 </div>'
     );

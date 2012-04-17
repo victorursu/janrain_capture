@@ -7,7 +7,6 @@
 function janrain_capture_oauth() {
   global $user;
   $token = isset($_REQUEST['code']) ? $_REQUEST['code'] : '';
-  $from_sso = isset($_REQUEST['from_sso']) ? $_REQUEST['from_sso'] : '';
   $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : '';
   $janrain_capture_fields = variable_get('janrain_capture_fields', array());
   $janrain_capture_main = variable_get('janrain_capture_main', array());
@@ -17,9 +16,13 @@ function janrain_capture_oauth() {
     drupal_set_message(t("You're already signed in!"), 'error');
   }
   elseif ($token) {
-    $uri_opts = ($from_sso && $origin) ? array('query' => array('from_sso' => 'true', 'origin' => $origin), 'absolute' => true) : array('absolute' => true);
+    $uri_opts = ($origin) ? array('query' => array('origin' => $origin), 'absolute' => true) : array('absolute' => true);
 
-    $redirect_uri = url('janrain_capture/oauth', $uri_opts);
+    // Cannot use the Drupal url query option because drupal_http_build_query decodes
+    // slashes causing incompatibility
+    $redirect_uri = url('janrain_capture/oauth', array('absolute' => true));
+    if ($origin)
+      $redirect_uri.= (strpos($redirect_uri, '?') !== false ? '&' : '?') . 'origin=' . urlencode($origin);
 
     $api = new Capture_API();
     $api->new_access_token($token, $redirect_uri);

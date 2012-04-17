@@ -101,13 +101,13 @@ function janrain_capture_ui_init() {
   sso_server: "https://' . $capture_sso_address . '",
   client_id: "' . $capture_client_id . '",
   redirect_uri: "' . url('janrain_capture/oauth', array('absolute' => true)) . '",
-  logout_uri: "' . url('logout', array('absolute' => true)) . '",
+  logout_uri: "' . url('user/logout', array('absolute' => true)) . '",
   xd_receiver: "' . url(null, array('absolute' => true)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html"
 });
 function janrain_capture_logout() {
   JANRAIN.SSO.CAPTURE.logout({
     sso_server: "https://' . $capture_sso_address . '",
-    logout_uri: "' . url('logout', array('absolute' => true)) . '"
+    logout_uri: "' . url('user/logout', array('absolute' => true)) . '"
   });
 }
 jQuery(function($) {
@@ -221,13 +221,17 @@ function janrain_capture_ui_block_info() {
  * Implements hook_block_view()
  */
 function janrain_capture_ui_block_view($delta) {
+  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
   switch ($delta) {
     case 'janrain_capture':
       global $user;
       $content = '';
       if ($user->uid) {
         $content.= $_SESSION['janrain_capture_access_token'] ? '<li><a class="iframe fancy janrain_capture_anchor" href="' . url('janrain_capture/profile', array('absolute' => true)) . '">View / Edit Profile</a></li>' : '';
-        $content.= '<li><a href="' . url('user/logout') . '" onclick="janrain_capture_logout">Log out</a></li>';
+        if ($janrain_capture_optional['capture_sso_address'])
+          $content.= '<li><a href="javascript:janrain_capture_logout()">Log out</a></li>';
+        else
+          $content.= '<li><a href="' . url('user/logout') . '">Log out</a></li>';
       }
       else {
         $content.= '<li><a class="iframe fancy janrain_capture_anchor janrain_capture_signin" href="' . CAPTURE_LOGIN_URL . '">Register / Sign In</a></li>';

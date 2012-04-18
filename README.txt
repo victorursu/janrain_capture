@@ -17,7 +17,7 @@ INSTALLATION
 ------------
 
 1) The janrain_capture_ui module in this package relies on the jQuery Update
-module to be installed and enabled to update jQuery to 1.3.2 and for the
+module to be installed and enabled to update jQuery to 1.5.2 and for the
 Fancybox jQuery library version 1.3.4 to be installed at:
 sites/all/libraries/fancybox/jquery.fancybox-1.3.4.pack.js
 

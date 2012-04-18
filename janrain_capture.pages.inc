@@ -29,7 +29,7 @@ function janrain_capture_oauth() {
     if ($origin) {
       $redirect_uri .= (strpos($redirect_uri, '?') !== FALSE ? '&' : '?') . 'origin=' . urlencode($origin);
     }
-    $api = new CaptureApi();
+    $api = new JanrainCaptureApi();
     $api->newAccessToken($token, $redirect_uri);
     $profile = $api->loadUserEntity();
 
@@ -156,7 +156,7 @@ function janrain_capture_profile() {
   $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));
 
   if (time() >= $_SESSION['janrain_capture_expires_in']) {
-    $api = new CaptureApi();
+    $api = new JanrainCaptureApi();
     $api->refreshAccessToken($_SESSION['janrain_capture_refresh_token']);
   }
 
@@ -186,7 +186,7 @@ function janrain_capture_profile_sync() {
 
   $origin = isset($_REQUEST['origin']) ? urldecode($_REQUEST['origin']) : '';
 
-  $api = new CaptureApi();
+  $api = new JanrainCaptureApi();
   $profile = $api->loadUserEntity();
 
   if (!$profile) {

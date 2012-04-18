@@ -1,7 +1,7 @@
 <?php
+
 /**
  * @file
- *
  * User page callbacks for the janrain_capture module.
  */
 
@@ -52,7 +52,7 @@ function janrain_capture_oauth() {
 
       // No user was found with our Capture uuid.
       if ($account === FALSE) {
-        // Look for a local user with the same email address
+        // Look for a local user with the same email address.
         $local_user = reset(user_load_multiple(array(), array('mail' => $profile['result']['email'])));
         if ($local_user) {
 
@@ -197,7 +197,7 @@ function janrain_capture_profile_sync() {
     'name' => janrain_capture_profile_field($profile),
     'mail' => $profile['result']['email'],
   );
-  
+
   $merged_data = janrain_capture_fields_array($user_data, $profile['result']);
 
   if ($account = user_save($user, $merged_data)) {
@@ -279,4 +279,3 @@ function janrain_capture_token_expired() {
   drupal_set_message(t('Your session has expired. Please sign in again.'), 'error');
   drupal_goto();
 }
-

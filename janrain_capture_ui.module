@@ -1,7 +1,7 @@
 <?php
+
 /**
  * @file
- *
  * This module implements UI elements for Janrain Capture
  *
  * @see http://www.janrain.com/products/capture
@@ -192,6 +192,7 @@ jQuery(function($) {
 function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
   global $user;
 
+  $markup = '<div class="form-item"><a class="iframe fancy janrain_capture_anchor" href="' . url('janrain_capture/profile', array('absolute' => TRUE)) . '">Edit Profile</a></div>';
   if ($user->uid == $form['#user']->uid) {
     $form['account'] = array(
       '#type' => 'fieldset',
@@ -201,11 +202,7 @@ function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
     );
     $form['account']['description'] = array(
       '#type' => 'markup',
-      '#markup' => '<div class="form-item">
-                    <a class="iframe fancy janrain_capture_anchor" href="'
-                    . url('janrain_capture/profile', array('absolute' => TRUE))
-                    . '">Edit Profile</a>
-                </div>',
+      '#markup' => $markup,
     );
   }
 }
@@ -267,4 +264,3 @@ function janrain_capture_ui_block_view($delta) {
 
   return $block;
 }
-

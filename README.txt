@@ -227,4 +227,3 @@ If you return false on hook_janrain_capture_verification_resent you will bypass
 a redirect to the home page of the Drupal installation after calling the
 drupal_set_message method. If you are returning false you will need to initiate
 a redirect using the drupal_goto() method to a page of your choosing.
-

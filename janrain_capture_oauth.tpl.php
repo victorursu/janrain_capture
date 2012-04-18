@@ -1,7 +1,7 @@
 <?php
+
 /**
  * @file
- *
  * Template to print upon completion of the Capture OAuth flow.
  */
 
@@ -25,4 +25,3 @@ global $base_url;
     </script>
   </body>
 </html>
-

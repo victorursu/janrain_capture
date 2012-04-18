@@ -1,9 +1,8 @@
 <?php
+
 /**
  * @file
- *
- * API Client for making calls to the Janrain Capture web service
- *
+ * An API Client for making calls to the Janrain Capture web service.
  */
 
 class JanrainCaptureApi {
@@ -206,4 +205,3 @@ class JanrainCaptureApi {
   }
 
 }
-

@@ -14,4 +14,3 @@ function janrain_capture_uninstall() {
   variable_del('janrain_capture_fields');
   variable_del('janrain_capture_dependencies');
 }
-

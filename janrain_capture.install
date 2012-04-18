@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * @file
+ * Uninstall functions for the janrain_capture module
+ */
+
+/**
+ * Removes unused variables when uninstalling.
+ */
+function janrain_capture_uninstall() {
+  variable_del('janrain_capture_main');
+  variable_del('janrain_capture_optional');
+  variable_del('janrain_capture_fields');
+  variable_del('janrain_capture_dependencies');
+}
+

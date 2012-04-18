@@ -1,7 +1,4 @@
-; $Id$
 name = Janrain Capture Core
 description = Integrates Janrain Capture for Drupal authentication
 package = Janrain Capture
 core = 7.x
-version = "7.x-1.0"
-project = "janrain_capture"

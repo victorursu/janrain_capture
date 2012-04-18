@@ -1,15 +1,15 @@
 <?php
-
 /**
  * @file
  *
  * API Client for making calls to the Janrain Capture web service
  *
  */
-class Capture_API {
+
+class JanrainCaptureApi {
 
   protected $args;
-  protected $capture_addr;
+  protected $captureAddr;
 
   /**
    * Retrives API access credentials from settings.
@@ -17,7 +17,7 @@ class Capture_API {
   function __construct() {
     $janrain_capture_main = variable_get('janrain_capture_main', array());
     $janrain_capture_optional = variable_get('janrain_capture_optional', array());
-    
+
     $this->args = array();
     $this->args['client_id'] = isset($janrain_capture_main['capture_client_id'])
         ? $janrain_capture_main['capture_client_id']
@@ -25,8 +25,8 @@ class Capture_API {
     $this->args['client_secret'] = isset($janrain_capture_main['capture_client_secret'])
         ? $janrain_capture_main['capture_client_secret']
         : '';
-    
-    $this->capture_addr = !empty($janrain_capture_main['capture_address'])
+
+    $this->captureAddr = !empty($janrain_capture_main['capture_address'])
       ? $janrain_capture_main['capture_address']
       : '';
   }
@@ -40,19 +40,21 @@ class Capture_API {
    *   The data set to pass via POST
    * @param string $access_token
    *   The client access token to use when performing user-specific calls
-   * @return
+   *
+   * @return mixed
    *   The HTTP request result data
    */
-  protected function call($command, $arg_array = null, $access_token = null) {
+  protected function call($command, $arg_array = NULL, $access_token = NULL) {
 
-    $url = "https://" . $this->capture_addr . "/$command";
+    $url = "https://" . $this->captureAddr . "/$command";
 
     $headers = array(
       'Content-Type' => 'application/x-www-form-urlencoded',
-      'User-Agent' => 'Drupal'
+      'User-Agent' => 'Drupal',
     );
-    if (isset($access_token))
+    if (isset($access_token)) {
       $headers['Authorization'] = "OAuth $access_token";
+    }
     $options = array('headers' => $headers);
 
     if (isset($arg_array)) {
@@ -63,17 +65,17 @@ class Capture_API {
     $result = drupal_http_request($url, $options);
 
     if (!isset($result->data)) {
-      return false;
+      return FALSE;
     }
 
-    $json_data = json_decode($result->data, true);
+    $json_data = json_decode($result->data, TRUE);
 
     if ($json_data['stat'] == 'error') {
       $error = new stdClass();
       $error->code = $json_data['code'];
       $error->error = $json_data['error'];
-      $this->report_error($error);
-      return false;
+      $this->reportError($error);
+      return FALSE;
     }
 
     return $json_data;
@@ -85,25 +87,26 @@ class Capture_API {
    * @param string $json_data
    *   The data received from the HTTP request containing the tokens
    */
-  protected function update_capture_session($json_data) {
+  protected function updateCaptureSession($json_data) {
     $_SESSION['janrain_capture_access_token'] = $json_data['access_token'];
     $_SESSION['janrain_capture_refresh_token'] = $json_data['refresh_token'];
     $_SESSION['janrain_capture_expires_in'] = time() + $json_data['expires_in'];
 
     $password_recover = (isset($json_data['transaction_state']['capture']['password_recover'])
-        && $json_data['transaction_state']['capture']['password_recover'] == true) ? true : false;
+        && $json_data['transaction_state']['capture']['password_recover'] == TRUE) ? TRUE : FALSE;
     $_SESSION['janrain_capture_password_recover'] = $password_recover;
-    if (isset($json_data['transaction_state']['capture']['action']))
+    if (isset($json_data['transaction_state']['capture']['action'])) {
       $_SESSION['janrain_capture_action'] = $json_data['transaction_state']['capture']['action'];
+    }
   }
 
   /**
    * Helper function for the Engage web API wrappers.
-   * 
+   *
    * @param stdClass $result
    *   Result containing error code and message
    */
-  protected function report_error($result) {
+  protected function reportError($result) {
     watchdog('janrain_capture', 'Capture web API seems to be inaccessible due to "%error".', array('%error' => $result->code . ' ' . $result->error), WATCHDOG_WARNING);
     drupal_set_message(t('Capture web API seems to be inaccessible because of error "%error".', array('%error' => $result->code . ' ' . $result->error)), 'error');
   }
@@ -113,49 +116,50 @@ class Capture_API {
    *
    * @param string $auth_code
    *   The authorization token to use for the exchange
-   * @param array $arg_array
-   *   The data set to pass via POST
-   * @param string $access_token
-   *   The client access token to use when performing user-specific calls
+   * @param string $redirect_uri
+   *   The redirect_uri string to match for the exchange
    */
-  public function new_access_token($auth_code, $redirect_uri) {
+  public function newAccessToken($auth_code, $redirect_uri) {
     $command = "oauth/token";
-    $arg_array = array('code' => $auth_code,
+    $arg_array = array(
+      'code' => $auth_code,
       'redirect_uri' => $redirect_uri,
-      'grant_type' => 'authorization_code'
+      'grant_type' => 'authorization_code',
     );
 
     $json_data = $this->call($command, $arg_array);
     if ($json_data) {
-      $this->update_capture_session($json_data);
-      return true;
+      $this->updateCaptureSession($json_data);
+      return TRUE;
     }
 
-    return false;
+    return FALSE;
   }
-  
+
   /**
    * Retrieves a new access_token/refresh_token set
    *
    * @param string $refresh_token
    *   A valid refresh token from a previous access set
+   *
    * @return boolean
    *   Boolean success or failure
    */
-  function refresh_access_token($refresh_token) {
+  function refreshAccessToken($refresh_token) {
     $command = "oauth/token";
-    $arg_array = array('refresh_token' => $refresh_token,
-      'grant_type' => 'refresh_token'
+    $arg_array = array(
+      'refresh_token' => $refresh_token,
+      'grant_type' => 'refresh_token',
     );
 
     $json_data = $this->call($command, $arg_array);
 
     if ($json_data) {
-      $this->update_capture_session($json_data);
-      return true;
+      $this->updateCaptureSession($json_data);
+      return TRUE;
     }
 
-    return false;
+    return FALSE;
   }
 
   /**
@@ -163,33 +167,38 @@ class Capture_API {
    *
    * @param boolean $can_refresh
    *   Allow this function to refresh the token set if needed
+   *
    * @return mixed
    *   The entity retrieved or null
    */
-  public function load_user_entity($can_refresh = true) {
-    if (!$_SESSION['janrain_capture_access_token'])
-      return null;
+  public function loadUserEntity($can_refresh = TRUE) {
+    if (!$_SESSION['janrain_capture_access_token']) {
+      return NULL;
+    }
+    $user_entity = NULL;
 
-    $user_entity = null;
+    $need_to_refresh = FALSE;
 
-    $need_to_refresh = false;
-
-    // Check if we need to refresh the access token
-    if (time() >= $_SESSION['janrain_capture_expires_in'])
-      $need_to_refresh = true;
+    // Check if we need to refresh the access token.
+    if (time() >= $_SESSION['janrain_capture_expires_in']) {
+      $need_to_refresh = TRUE;
+    }
     else {
       $user_entity = $this->call('entity', array(), $_SESSION['janrain_capture_access_token']);
-      if (isset($user_entity['code']) && $user_entity['code'] == '414')
-        $need_to_refresh = true;
+      if (isset($user_entity['code']) && $user_entity['code'] == '414') {
+        $need_to_refresh = TRUE;
+      }
     }
 
     // If necessary, refresh the access token and try to fetch the entity again.
     if ($need_to_refresh) {
       if ($can_refresh) {
-        if ($this->refresh_access_token($_SESSION['janrain_capture_refresh_token']))
-          return $this->load_user_entity(false);
-        else
-          return null;
+        if ($this->refresh_access_token($_SESSION['janrain_capture_refresh_token'])) {
+          return $this->load_user_entity(FALSE);
+        }
+        else {
+          return NULL;
+        }
       }
     }
 

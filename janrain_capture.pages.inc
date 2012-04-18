@@ -21,8 +21,6 @@ function janrain_capture_oauth() {
     drupal_set_message(t("You're already signed in!"), 'error');
   }
   elseif ($token) {
-    $uri_opts = ($origin) ? array('query' => array('origin' => $origin), 'absolute' => TRUE) : array('absolute' => TRUE);
-
     // Cannot use the Drupal url query option because drupal_http_build_query
     // decodes slashes causing incompatibility.
     $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));
@@ -44,7 +42,7 @@ function janrain_capture_oauth() {
       $user_info = array(
         'name' => janrain_capture_profile_field($profile),
         'mail' => $profile['result']['email'],
-        'status' => 1
+        'status' => 1,
       );
 
       $user_info = janrain_capture_fields_array($user_info, $profile['result']);

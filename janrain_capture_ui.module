@@ -164,7 +164,7 @@ jQuery(function($) {
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FROM_ID_alter().
  */
 function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
   global $user;

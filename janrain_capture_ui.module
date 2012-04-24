@@ -168,8 +168,17 @@ jQuery(function($) {
  */
 function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
   global $user;
-
-  $markup = '<div class="form-item"><a class="iframe fancy janrain_capture_anchor" href="' . url('janrain_capture/profile', array('absolute' => TRUE)) . '">Edit Profile</a></div>';
+  $link = l(
+    t('Edit Profile'),
+    'janrain_capture/profile',
+    array(
+      'absolute' => TRUE,
+      'attributes' => array(
+        'class' => array('iframe', 'fancy', 'janrain_capture_anchor'),
+      ),
+    )
+  );
+  $markup = '<div class="form-item">' . $link . '</div>';
   if ($user->uid == $form['#user']->uid) {
     $form['account'] = array(
       '#type' => 'fieldset',

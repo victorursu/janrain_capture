@@ -7,8 +7,6 @@
  * @see http://www.janrain.com/products/capture
  */
 
-require_once 'janrain_capture.api.inc';
-
 /**
  * Implements hook_menu().
  */

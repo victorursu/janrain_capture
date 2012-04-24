@@ -37,11 +37,12 @@ or to sites/all/modules
 Janrain Capture client information.
 
 5) Include a link somewhere in your page templates to authenticate. If using
-the janrain_capture_ui module this should point to the PHP constant
-'CAPTURE_LOGIN_URL' and should have the classes 'fancy' and 'iframe' in order
-for the fancybox initialization to bind correctly.
+the janrain_capture_ui module you can use the PHP function
+janrain_capture_url()  to construct the href and should have the classes
+'fancy' and 'iframe' in order for the fancybox initialization to bind
+correctly.
 Example:
-<a href="<?php echo CAPTURE_LOGIN_URL; ?>" class="iframe fancy">Log in</a>
+<a href="<?php echo janrain_capture_url(); ?>" class="iframe fancy">Log in</a>
 
 There is also a Janrain Capture block with Login / Logout and Edit Profile
 links but is generally meant for testing and may not be suitable for production

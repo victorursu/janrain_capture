@@ -118,11 +118,12 @@ function janrain_capture_oauth() {
           && $janrain_capture_fields['capture_enforce_verification']
           && $profile['result']['emailVerified'] == NULL) {
         $signin = FALSE;
-        $resend_link = 'https://'
-          . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
-          . '/oauth/resend_verification_email?access_token='
-          . $_SESSION['janrain_capture_access_token'] . '&redirect_uri='
-          . urlencode(url('janrain_capture/resend_verification_email', array('absolute' => TRUE)));
+        $args = array(
+          'action' => 'resend_verification_email',
+          'access_token' => $_SESSION['janrain_capture_access_token'],
+          'redirect_uri' => url('janrain_capture/resend_verification_email', array('absolute' => TRUE)),
+        );
+        $resend_link = janrain_capture_url($args);
         drupal_set_message(t('Your email address has not yet been verified. Please check your email and try again. <a href="@resend-link">Click Here</a> to have this email resent.', array('@resend-link' => $resend_link)), 'error');
       }
 
@@ -159,20 +160,13 @@ function janrain_capture_profile() {
   }
 
   $args = array(
-    'flags' => 'stay_in_window',
-    'client_id' => $janrain_capture_main['capture_client_id'],
-    'redirect_uri' => $redirect_uri,
-    'callback' => 'CAPTURE.closeProfileEditor',
-    'xd_receiver' => url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html',
+    'action' => 'profile' . $method,
     'access_token' => $_SESSION['janrain_capture_access_token'],
   );
 
-  $url = 'https://'
-      . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
-      . '/oauth/profile' . $method . '?' . http_build_query($args, '', '&');
+  $url = janrain_capture_url($args);
 
-  header("Location: " . $url, TRUE, 302);
-  exit;
+  drupal_goto($url);
 }
 
 /**

@@ -78,3 +78,53 @@ function janrain_capture_menu() {
 function janrain_capture_theme($existing, $type, $theme, $path) {
   return array('janrain_capture_oauth' => array('template' => 'janrain_capture_oauth'));
 }
+
+/**
+ * Returns the full URL of a specified CaptureUI screen
+ *
+ * @param array $options
+ *   An associative array of options to use in constructing the URL
+ *
+ * @return string
+ *   The full URL string of the Capture URL screen being requested
+ */
+function janrain_capture_url($options=NULL) {
+  $janrain_capture_main = variable_get('janrain_capture_main', array());
+  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
+  if (!empty($janrain_capture_main['capture_address'])
+    && !empty($janrain_capture_main['capture_client_id'])) {
+
+    $required = array(
+      'redirect_uri' => url('janrain_capture/oauth', array('absolute' => TRUE)),
+      'xd_receiver' => url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html',
+      'client_id' => $janrain_capture_main['capture_client_id'],
+    );
+
+    if (!$options || strpos($options['action'], 'profile') !== 0) {
+      if (!$options) {
+        $options = array();
+      }
+      $defaults = array(
+        'action' => 'signin',
+        'recover_password_callback' => 'CAPTURE.closeRecoverPassword',
+        'response_type' => 'code',
+      );
+    }
+    else {
+      $defaults = array(
+        'callback' => 'CAPTURE.closeProfileEditor',
+      );
+    }
+    $args = array_merge($required, $defaults, $options);
+    $action = $args['action'];
+    unset($args['action']);
+
+    $url = 'https://'
+      . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
+      . '/oauth/' . $action . '?' . http_build_query($args, '', '&');
+  }
+  else {
+    $url = '';
+  }
+  return $url;
+}

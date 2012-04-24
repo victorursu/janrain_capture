@@ -7,19 +7,6 @@
  * @see http://www.janrain.com/products/capture
  */
 
-$janrain_capture_main = variable_get('janrain_capture_main', array());
-$janrain_capture_optional = variable_get('janrain_capture_optional', array());
-if (!empty($janrain_capture_main['capture_address']) && !empty($janrain_capture_main['capture_client_id'])) {
-  define('CAPTURE_LOGIN_URL', 'https://'
-      . (!empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : $janrain_capture_main['capture_address'])
-      . '/oauth/signin?response_type=code&flags=stay_in_window&recover_password_callback=CAPTURE.closeRecoverPassword&redirect_uri='
-      . urlencode(url('janrain_capture/oauth', array('absolute' => TRUE)))
-      . '&client_id='
-      . $janrain_capture_main['capture_client_id']
-      . '&xd_receiver='
-      . urlencode(url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html'));
-}
-
 /**
  * Implements hook_init().
  */
@@ -154,16 +141,6 @@ jQuery(function($) {
     $_SESSION['janrain_capture_password_recover'] = FALSE;
   }
 
-  $final_scripts = module_invoke_all('janrain_capture_add_js', $scripts);
-  $final_styles = module_invoke_all('janrain_capture_add_css', $styles);
-
-  if (is_array($final_scripts) && !empty($final_scripts)) {
-    $scripts = $final_scripts;
-  }
-  if (is_array($final_styles) && !empty($final_styles)) {
-    $styles = $final_styles;
-  }
-
   if (isset($scripts['external']) && is_array($scripts['external'])) {
     foreach ($scripts['external'] as $s) {
       drupal_add_js($s, array('type' => 'external'));
@@ -253,7 +230,7 @@ function janrain_capture_ui_block_view($delta) {
       }
       else {
         $content .= '<li><a class="iframe fancy janrain_capture_anchor janrain_capture_signin" href="'
-          . CAPTURE_LOGIN_URL . '">Register / Sign In</a></li>';
+          . janrain_capture_url() . '">Register / Sign In</a></li>';
       }
       $block = array(
         'subject' => t('Janrain Capture'),

@@ -223,27 +223,44 @@ function janrain_capture_ui_block_view($delta) {
   switch ($delta) {
     case 'janrain_capture':
       global $user;
-      $content = '';
+      $items = array();
       if ($user->uid) {
-        $content .= $_SESSION['janrain_capture_access_token']
-          ? '<li><a class="iframe fancy janrain_capture_anchor" href="'
-            . url('janrain_capture/profile', array('absolute' => TRUE))
-            . '">View / Edit Profile</a></li>'
-          : '';
+        $items[] = l(
+          t('View / Edit Profile'),
+          'janrain_capture/profile',
+          array(
+            'absolute' => TRUE,
+            'attributes' => array(
+              'class' => array('iframe', 'fancy', 'janrain_capture_anchor'),
+            ),
+          )
+        );
         if ($janrain_capture_optional['capture_sso_address']) {
-          $content .= '<li><a href="javascript:janrain_capture_logout()">Log out</a></li>';
+          $items[] = '<a href="javascript:janrain_capture_logout()">' . t('Log out') . '</a>';
         }
         else {
-          $content .= '<li><a href="' . url('user/logout') . '">Log out</a></li>';
+          $items[] = l(t('Log out'), 'user/logout');
         }
       }
       else {
-        $content .= '<li><a class="iframe fancy janrain_capture_anchor janrain_capture_signin" href="'
-          . janrain_capture_url() . '">Register / Sign In</a></li>';
+        $items[] = l(
+          t('Register / Sign in'),
+          janrain_capture_url(),
+          array(
+            'attributes' => array(
+              'class' => array(
+                'iframe',
+                'fancy',
+                'janrain_capture_anchor',
+                'janrain_capture_signin',
+              ),
+            ),
+          )
+        );
       }
       $block = array(
         'subject' => t('Janrain Capture'),
-        'content' => '<ul class="menu">' . $content . '</ul>',
+        'content' => theme('item_list', array('items' => $items)),
       );
       break;
   }

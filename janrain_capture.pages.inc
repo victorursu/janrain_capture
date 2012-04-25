@@ -130,8 +130,7 @@ function janrain_capture_oauth() {
         $resend_link = janrain_capture_url($args);
         $email_unverified = module_invoke_all('janrain_capture_email_unverified', $resend_link);
         if (empty($email_unverified) || !in_array(FALSE, $email_unverified)) {
-          $r_link = l(t('Click here'), $resend_link);
-          drupal_set_message(t('Your email address has not yet been verified. Please check your email and try again. @resend-link to have this email resent.', array('@resend-link' => $r_link)), 'error');
+          drupal_set_message(t('Your email address has not yet been verified. Please check your email and try again. <a href="@resend-link">Click here</a> to have this email resent.', array('@resend-link' => $resend_link)), 'error');
         }
       }
 
@@ -158,6 +157,7 @@ function janrain_capture_oauth() {
  */
 function janrain_capture_profile() {
   $method = isset($_GET['method']) ? $_GET['method'] : '';
+  $callback = isset($_GET['callback']) ? $_GET['callback'] : 'CAPTURE.closeProfileEditor';
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
   $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));
@@ -170,6 +170,7 @@ function janrain_capture_profile() {
   $args = array(
     'action' => 'profile' . $method,
     'access_token' => $_SESSION['janrain_capture_access_token'],
+    'callback' => $callback,
   );
 
   $url = janrain_capture_url($args);

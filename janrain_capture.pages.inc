@@ -128,7 +128,11 @@ function janrain_capture_oauth() {
           'redirect_uri' => url('janrain_capture/resend_verification_email', array('absolute' => TRUE)),
         );
         $resend_link = janrain_capture_url($args);
-        drupal_set_message(t('Your email address has not yet been verified. Please check your email and try again. <a href="@resend-link">Click Here</a> to have this email resent.', array('@resend-link' => $resend_link)), 'error');
+        $email_unverified = module_invoke_all('janrain_capture_email_unverified', $resend_link);
+        if (empty($email_unverified) || !in_array(FALSE, $email_unverified)) {
+          $r_link = l(t('Click here'), $resend_link);
+          drupal_set_message(t('Your email address has not yet been verified. Please check your email and try again. @resend-link to have this email resent.', array('@resend-link' => $r_link)), 'error');
+        }
       }
 
       if ($signin) {
@@ -257,8 +261,12 @@ function janrain_capture_fields_array($user_data, $profile) {
 function janrain_capture_resend_verification_email() {
   $hook = module_invoke_all('janrain_capture_verification_resent');
   if (empty($hook) || !in_array(FALSE, $hook)) {
-    $email_text = (isset($_SESSION['janrain_capture_profile']['result']['email'])) ? ' to ' . $_SESSION['janrain_capture_profile']['result']['email'] : '';
-    drupal_set_message(t('A verification link has been sent@email-text. Please check your email.', array('@email-text' => $email_text)), 'status');
+    if (isset($_SESSION['janrain_capture_profile']['result']['email'])) {
+      drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_profile']['result']['email'])), 'status');
+    }
+    else {
+      drupal_set_message(t('A verification link has been sent. Please check your email.'), 'status');
+    }
     drupal_goto();
   }
 }

@@ -64,7 +64,7 @@ function janrain_capture_ui_init() {
   $scripts['module'][] = !empty($janrain_capture_dependencies['capture_fancy_js'])
     ? $janrain_capture_dependencies['capture_fancy_js']
     : 'sites/all/libraries/fancybox/jquery.fancybox-1.3.4.pack.js';
-  $scripts['module'][] = url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js';
+  $scripts['module'][] = drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js';
 
   $styles = array();
   $styles[] = !empty($janrain_capture_dependencies['capture_fancy_css'])

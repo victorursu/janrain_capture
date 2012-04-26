@@ -18,7 +18,7 @@
  * @param boolean $new_user
  *   TRUE if this is the users first time to this site
  */
-function hook_janrain_capture_user_authenticated($capture_profile, $account, $new_usera) {
+function hook_janrain_capture_user_authenticated($capture_profile, $account, $new_user) {
   if ($new_user) {
     $params['account'] = $account;
 

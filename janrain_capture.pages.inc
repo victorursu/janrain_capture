@@ -110,13 +110,13 @@ function janrain_capture_oauth() {
             && isset($janrain_capture_fields['capture_enforce_verification'])
             && $janrain_capture_fields['capture_enforce_verification']
             && $profile['result']['emailVerified'] == NULL) {
-          $signin = FALSE;
-          if (isset($_SESSION['janrain_capture_profile']['result']['email'])) {
-            drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_profile']['result']['email'])), 'status');
-          }
-          else {
-            drupal_set_message(t('A verification link has been sent. Please check your email.'), 'status');
-          }
+        $signin = FALSE;
+        if (isset($_SESSION['janrain_capture_profile']['result']['email'])) {
+          drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_profile']['result']['email'])), 'status');
+        }
+        else {
+          drupal_set_message(t('A verification link has been sent. Please check your email.'), 'status');
+        }
       }
       elseif (isset($janrain_capture_fields['capture_enforce_verification'])
           && $janrain_capture_fields['capture_enforce_verification']

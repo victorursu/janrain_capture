@@ -90,7 +90,13 @@ function janrain_capture_ui_init() {
     $scripts['inline'][] = 'jQuery(function($) {
   $.fancybox({
     type: "iframe",
-    href: "' . url('janrain_capture/profile', array('absolute' => TRUE, 'query' => array('method' => '_change_password', 'callback' => 'CAPTURE.closeRecoverPassword'))) . '",
+    href: "' . url('janrain_capture/profile', array(
+      'absolute' => TRUE,
+      'query' => array(
+        'method' => '_change_password',
+        'callback' => 'CAPTURE.closeRecoverPassword',
+      ),
+    )) . '",
     padding: 0,
     scrolling: "no",
     autoScale: true,

@@ -86,7 +86,7 @@ function janrain_capture_theme($existing, $type, $theme, $path) {
  * @return string
  *   The full URL string of the Capture URL screen being requested
  */
-function janrain_capture_url($options=NULL) {
+function janrain_capture_url($options = NULL) {
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
   if (!empty($janrain_capture_main['capture_address'])

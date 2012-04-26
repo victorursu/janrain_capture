@@ -18,15 +18,13 @@
  * @param boolean $new_user
  *   TRUE if this is the users first time to this site
  */
-function hook_janrain_capture_user_authenticated($capture_profile,
-  $account,
-  $new_user) {
+function hook_janrain_capture_user_authenticated($capture_profile, $account, $new_usera) {
   if ($new_user) {
     $params['account'] = $account;
 
     // EXAMPLE:
     // Execute the welcome_message_mail function with key being either 'male',
-    // 'female', or null
+    // 'female', or null.
     drupal_mail('welcome_message',
       $capture_profile['gender'],
       $account->mail,
@@ -54,13 +52,11 @@ function hook_janrain_capture_user_authenticated($capture_profile,
  * @return boolean
  *   If FALSE Drupal will not redirect the user to $origin
  */
-function hook_janrain_capture_user_profile_updated($capture_profile,
-  $account,
-  $origin) {
-  // Update status message and redirect user to home page
-  drupal_set_message("Profile Updated!", "status");
+function hook_janrain_capture_user_profile_updated($capture_profile, $account, $origin) {
+  // Update status message and redirect user to home page.
+  drupal_set_message(t('Profile Updated!'), 'status');
   drupal_goto();
-  return false;
+  return FALSE;
 }
 
 /**
@@ -80,10 +76,10 @@ function hook_janrain_capture_user_profile_updated($capture_profile,
  */
 function hook_janrain_capture_fields_array($capture_profile) {
   // Sync givenName and familyName to custom fields created
-  // using the Drupal Profile module
+  // using the Drupal Profile module.
   return array(
     'profile_first_name' => $capture_profile['givenName'],
-    'profile_last_name' => $capture_profile['familyName']
+    'profile_last_name' => $capture_profile['familyName'],
   );
 }
 
@@ -97,7 +93,7 @@ function hook_janrain_capture_fields_array($capture_profile) {
  *   Display the default message or not
  */
 function hook_janrain_capture_user_already_mapped() {
-  drupal_set_message('There is another account with this email address.', 'error');
+  drupal_set_message(t('There is another account with this email address.'), 'error');
   return FALSE;
 }
 
@@ -111,7 +107,7 @@ function hook_janrain_capture_user_already_mapped() {
  *   Display the default message or not
  */
 function hook_janrain_capture_user_exists() {
-  drupal_set_message('There is another account with this email address.', 'error');
+  drupal_set_message(t('There is another account with this email address.'), 'error');
   return FALSE;
 }
 
@@ -124,7 +120,7 @@ function hook_janrain_capture_user_exists() {
  *   Display the default message or not
  */
 function hook_janrain_capture_failed_create() {
-  drupal_set_message('We could not process your request.', 'error');
+  drupal_set_message(t('We could not process your request.'), 'error');
   return FALSE;
 }
 
@@ -141,8 +137,9 @@ function hook_janrain_capture_failed_create() {
  *   Display the default message or not
  */
 function hook_janrain_capture_email_unverified($resend_link) {
-  $resend = l('Click here to resend it', $resend_link);
-  drupal_set_message("You haven't verified your email! $resend", 'error');
+  drupal_set_message(
+    t("You haven't verified your email! <a href='@resend-link'>Click here to resend it</a>",
+      array('@resend-link', $resend_link)), 'error');
   return FALSE;
 }
 
@@ -156,7 +153,7 @@ function hook_janrain_capture_email_unverified($resend_link) {
  *   Display the default message or not
  */
 function hook_janrain_capture_no_oauth() {
-  drupal_set_message('You cannot access this page directly.', 'error');
+  drupal_set_message(t('You cannot access this page directly.'), 'error');
   return FALSE;
 }
 
@@ -171,6 +168,6 @@ function hook_janrain_capture_no_oauth() {
  *   Display the default message and redirect to the home page or neither
  */
 function hook_janrain_capture_verification_resent() {
-  drupal_set_message('Go check your email!', 'status');
+  drupal_set_message(t('Go check your email!'), 'status');
   return FALSE;
 }

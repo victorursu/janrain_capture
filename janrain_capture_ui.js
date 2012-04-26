@@ -7,7 +7,7 @@
 
           $("#fancybox-inner, #fancybox-wrap, #fancybox-content, #fancybox-frame")
             .css({
-              width: args.w, 
+              width: args.w,
               height: args.h
             });
 

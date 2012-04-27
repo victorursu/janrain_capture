@@ -33,7 +33,7 @@ function janrain_capture_oauth() {
 
     if (!$profile || $profile['stat'] != 'ok') {
       drupal_set_message(t('We were unable to complete your request.'), 'error');
-      watchdog('janrain_capture', 'Failed to obtain a Capture record', WATCHDOG_ERROR);
+      watchdog('janrain_capture', 'Failed to obtain a Capture record', array(), WATCHDOG_ERROR);
     }
     else {
       // Save profile in session.
@@ -192,7 +192,7 @@ function janrain_capture_profile_sync() {
 
   if (!$profile) {
     drupal_set_message(t('We were unable to complete your request.'), 'error');
-    watchdog('janrain_capture', 'Failed to obtain a Capture record', WATCHDOG_ERROR);
+    watchdog('janrain_capture', 'Failed to obtain a Capture record', array(), WATCHDOG_ERROR);
     return;
   }
 
@@ -211,7 +211,7 @@ function janrain_capture_profile_sync() {
   }
   else {
     drupal_set_message(t('We were unable to complete your request.'), 'error');
-    watchdog('janrain_capture', 'Failed to save Capture data to user', WATCHDOG_ERROR);
+    watchdog('janrain_capture', 'Failed to save Capture data to user', array(), WATCHDOG_ERROR);
   }
 }
 

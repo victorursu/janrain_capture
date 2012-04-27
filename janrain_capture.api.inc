@@ -193,7 +193,7 @@ class JanrainCaptureApi {
     if ($need_to_refresh) {
       if ($can_refresh) {
         if ($this->refresh_access_token($_SESSION['janrain_capture_refresh_token'])) {
-          return $this->load_user_entity(FALSE);
+          return $this->loadUserEntity(FALSE);
         }
         else {
           return NULL;

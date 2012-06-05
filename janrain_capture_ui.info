@@ -3,5 +3,4 @@ description = Adds UI elements necessary for integrating Janrain Capture
 package = Janrain Capture
 core = 7.x
 
-dependencies[] = jquery_update
 dependencies[] = janrain_capture

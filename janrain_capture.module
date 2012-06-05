@@ -18,7 +18,6 @@ function janrain_capture_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
-    'module' => 'janrain_capture',
   );
 
   $items['janrain_capture/profile'] = array(
@@ -27,7 +26,6 @@ function janrain_capture_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
-    'module' => 'janrain_capture',
   );
 
   $items['janrain_capture/profile_sync'] = array(
@@ -36,7 +34,6 @@ function janrain_capture_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
-    'module' => 'janrain_capture',
   );
 
   $items['janrain_capture/resend_verification_email'] = array(
@@ -45,7 +42,6 @@ function janrain_capture_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
-    'module' => 'janrain_capture',
   );
 
   $items['admin/config/people/janrain_capture'] = array(
@@ -55,7 +51,6 @@ function janrain_capture_menu() {
     'page arguments' => array('janrain_capture_settings'),
     'access arguments' => array('administer site configuration'),
     'file' => 'janrain_capture.admin.inc',
-    'module' => 'janrain_capture',
   );
 
   $items['janrain_capture/token_expired'] = array(
@@ -64,7 +59,6 @@ function janrain_capture_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
-    'module' => 'janrain_capture',
   );
 
   return $items;

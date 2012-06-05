@@ -48,7 +48,7 @@ function janrain_capture_menu() {
     'module' => 'janrain_capture',
   );
 
-  $items['admin/settings/janrain_capture'] = array(
+  $items['admin/config/people/janrain_capture'] = array(
     'title' => 'Janrain Capture',
     'description' => 'Configure settings for Janrain Capture module.',
     'page callback' => 'drupal_get_form',

@@ -17,10 +17,7 @@ function janrain_capture_oauth() {
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
 
-  if ($user->uid) {
-    drupal_set_message(t("You're already signed in!"), 'error');
-  }
-  elseif ($token) {
+  if ($token) {
     // Cannot use the Drupal url query option because drupal_http_build_query
     // decodes slashes causing incompatibility.
     $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));

@@ -15,7 +15,7 @@ function janrain_capture_menu() {
   $items['janrain_capture/oauth'] = array(
     'title' => 'Capture Oauth Receiver',
     'page callback' => 'janrain_capture_oauth',
-    'access callback' => TRUE,
+    'access callback' => 'user_is_anonymous',
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
   );
@@ -23,7 +23,7 @@ function janrain_capture_menu() {
   $items['janrain_capture/profile'] = array(
     'title' => 'Capture Profile',
     'page callback' => 'janrain_capture_profile',
-    'access callback' => TRUE,
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
   );
@@ -31,7 +31,7 @@ function janrain_capture_menu() {
   $items['janrain_capture/profile_sync'] = array(
     'title' => 'Capture Profile Receiver',
     'page callback' => 'janrain_capture_profile_sync',
-    'access callback' => TRUE,
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
   );
@@ -56,7 +56,7 @@ function janrain_capture_menu() {
   $items['janrain_capture/token_expired'] = array(
     'title' => 'Capture Token Expired',
     'page callback' => 'janrain_capture_token_expired',
-    'access callback' => TRUE,
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
   );

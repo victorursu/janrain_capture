@@ -159,9 +159,9 @@ function janrain_capture_profile() {
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
   $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));
 
-  if (time() >= $_SESSION['janrain_capture_expires_in']) {
+  if (REQUEST_TIME >= $_SESSION['janrain_capture_expires_in']) {
     $api = new JanrainCaptureApi();
-    $api->refreshAccessToken($_SESSION['janrain_capture_refresh_token']);
+    $api->refreshAccessToken();
   }
 
   $args = array(

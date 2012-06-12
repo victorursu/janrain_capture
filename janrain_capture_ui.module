@@ -34,7 +34,7 @@ function janrain_capture_ui_init() {
   $settings = array(
     'janrainCapture' => array(
       'profile_sync_url' => url('janrain_capture/profile_sync', $uri_opts),
-      'token_expired_url' => url('janrain_capture/token_expired'),
+      'token_expired_url' => url('janrain_capture/token_expired/' . drupal_get_token('janrain_capture_token_expired')),
       'logout_url' => url('user/logout', array('absolute' => TRUE)),
     ),
   );

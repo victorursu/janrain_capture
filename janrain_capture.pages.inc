@@ -273,7 +273,10 @@ function janrain_capture_resend_verification_email() {
  * Callback the janrain_capture/token_expired menu item. Logs out a user
  * due to an expired session.
  */
-function janrain_capture_token_expired() {
+function janrain_capture_token_expired($token) {
+  if ($token !== drupal_get_token('janrain_capture_token_expired')) {
+    return MENU_ACCESS_DENIED;
+  }
   global $user;
   $tmp = NULL;
   session_destroy();

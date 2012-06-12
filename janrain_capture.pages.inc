@@ -25,8 +25,13 @@ function janrain_capture_oauth() {
       $redirect_uri .= (strpos($redirect_uri, '?') !== FALSE ? '&' : '?') . 'origin=' . urlencode($origin);
     }
     $api = new JanrainCaptureApi();
-    $api->newAccessToken($token, $redirect_uri);
-    $profile = $api->loadUserEntity();
+
+    if ($api->newAccessToken($token, $redirect_uri) == FALSE) {
+      $profile = NULL;
+    }
+    else {
+      $profile = $api->loadUserEntity();
+    }
 
     if (!$profile || $profile['stat'] != 'ok') {
       drupal_set_message(t('We were unable to complete your request.'), 'error');

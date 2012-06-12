@@ -63,7 +63,7 @@ class JanrainCaptureApi {
     }
     $result = drupal_http_request($url, $options);
 
-    if (!isset($result->data)) {
+    if (!isset($result->data) || $result->code != '200') {
       return FALSE;
     }
 

@@ -186,6 +186,10 @@ class JanrainCaptureApi {
    *   Boolean success or failure
    */
   function refreshAccessToken() {
+    if (empty($_SESSION['janrain_capture_refresh_token'])) {
+      return FALSE;
+    }
+
     $refresh_token = $this->refreshTokenReveal($_SESSION['janrain_capture_refresh_token']);
     $command = "oauth/token";
     $arg_array = array(
@@ -213,7 +217,7 @@ class JanrainCaptureApi {
    *   The entity retrieved or null
    */
   public function loadUserEntity($can_refresh = TRUE) {
-    if (!$_SESSION['janrain_capture_access_token']) {
+    if (empty($_SESSION['janrain_capture_access_token'])) {
       return NULL;
     }
     $user_entity = NULL;

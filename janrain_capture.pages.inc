@@ -83,7 +83,7 @@ function janrain_capture_oauth() {
         }
         // No local users with matching email. Create a new one.
         else {
-          $user_info['pass'] = md5(time() . $profile['result']['uuid']);
+          $user_info['pass'] = user_password();
           $account = user_save(NULL, $user_info);
           $new_user = TRUE;
           if (!$account->uid) {
@@ -210,8 +210,6 @@ function janrain_capture_profile() {
 function janrain_capture_profile_sync() {
   global $user;
 
-  $origin = isset($_REQUEST['origin']) ? urldecode($_REQUEST['origin']) : '';
-
   $api = new JanrainCaptureApi();
   $profile = $api->loadUserEntity();
 
@@ -229,9 +227,9 @@ function janrain_capture_profile_sync() {
   $merged_data = janrain_capture_fields_array($user_data, $profile['result']);
 
   if ($account = user_save($user, $merged_data)) {
-    $profile_updated_hook = module_invoke_all('janrain_capture_user_profile_updated', $profile['result'], $account, $origin);
+    $profile_updated_hook = module_invoke_all('janrain_capture_user_profile_updated', $profile['result'], $account);
     if (empty($profile_updated_hook) || !in_array(FALSE, $profile_updated_hook)) {
-      drupal_goto($origin);
+      drupal_goto();
     }
   }
   else {

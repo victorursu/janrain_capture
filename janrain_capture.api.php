@@ -46,13 +46,11 @@ function hook_janrain_capture_user_authenticated($capture_profile, $account, $ne
  *   The profile data returned from the user's Capture record
  * @param array $account
  *   The local Drupal user account being authenticated
- * @param string $origin
- *   The local page the user originated from when updating profile data
  *
  * @return boolean
  *   If FALSE Drupal will not redirect the user to $origin
  */
-function hook_janrain_capture_user_profile_updated($capture_profile, $account, $origin) {
+function hook_janrain_capture_user_profile_updated($capture_profile, $account) {
   // Update status message and redirect user to home page.
   drupal_set_message(t('Profile Updated!'), 'status');
   drupal_goto();

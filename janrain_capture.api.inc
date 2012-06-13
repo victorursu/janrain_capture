@@ -64,10 +64,18 @@ class JanrainCaptureApi {
     $result = drupal_http_request($url, $options);
 
     if (!isset($result->data) || $result->code != '200') {
+      $this->reportError($result);
       return FALSE;
     }
 
     $json_data = json_decode($result->data, TRUE);
+
+    // NULL decoded value indicates a parse error.
+    if (!isset($json_data)) {
+      $json_data['stat'] = 'error';
+      $json_data['code'] = '0';
+      $json_data['error'] = 'JSON parse error for: ' . $result->data;
+    }
 
     if ($json_data['stat'] == 'error') {
       $error = new stdClass();

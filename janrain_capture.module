@@ -143,13 +143,21 @@ function janrain_capture_menu() {
   $items['janrain_capture/token_expired/%'] = array(
     'title' => 'Capture Token Expired',
     'page callback' => 'janrain_capture_token_expired',
-    'page arguments' => array(2),
-    'access callback' => 'user_is_logged_in',
+    'access callback' => 'janrain_capture_token_expired_access',
+    'access arguments' => array(2),
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
   );
 
   return $items;
+}
+
+/**
+ * Access callback for janrain_capture_token_expired().
+ */
+function janrain_capture_token_expired_access($token) {
+  // This path is for authenticated users and is protected from CSRF with a token.
+  return user_is_logged_in() && ($token === drupal_get_token('janrain_capture_token_expired'));
 }
 
 /**

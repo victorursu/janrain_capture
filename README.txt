@@ -21,10 +21,6 @@ module to be installed and enabled to update jQuery to 1.5.2 and for the
 Fancybox jQuery library version 1.3.4 to be installed at:
 sites/all/libraries/fancybox/jquery.fancybox-1.3.4.pack.js
 
-Also for the janrain_capture_ui module you'll need to get a copy of json2.js
-from http://json.org/ and install it to:
-sites/all/libraries/json2/json2.js
-
 You also have the option of building out your own UI with your preferred iframe
 tools as well.
 

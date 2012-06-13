@@ -103,32 +103,5 @@ function janrain_capture_settings() {
     '#description' => t('Prompt users who have not verified their email address to do so before completing authentication'),
   );
 
-  $janrain_capture_dependencies = variable_get('janrain_capture_dependencies', array());
-  $form['janrain_capture_dependencies'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Dependency Locations'),
-    '#tree' => TRUE,
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-  );
-  $form['janrain_capture_dependencies']['capture_json2'] = array(
-    '#type' => 'textfield',
-    '#title' => t('JSON2.js Location'),
-    '#default_value' => !empty($janrain_capture_dependencies['capture_json2']) ? $janrain_capture_dependencies['capture_json2'] : 'sites/all/libraries/json2/json2.js',
-    '#description' => t('The path to json2.js releative to your Drupal installation root'),
-  );
-  $form['janrain_capture_dependencies']['capture_fancy_js'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Fancybox JS Location'),
-    '#default_value' => !empty($janrain_capture_dependencies['capture_fancy_js']) ? $janrain_capture_dependencies['capture_fancy_js'] : 'sites/all/libraries/fancybox/jquery.fancybox-1.3.4.pack.js',
-    '#description' => t('The path to the Fancybox javascript library releative to your Drupal installation root'),
-  );
-  $form['janrain_capture_dependencies']['capture_fancy_css'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Fancybox CSS Location'),
-    '#default_value' => !empty($janrain_capture_dependencies['capture_fancy_css']) ? $janrain_capture_dependencies['capture_fancy_css'] : 'sites/all/libraries/fancybox/jquery.fancybox-1.3.4.css',
-    '#description' => t('The path to the Fancybox css stylesheet releative to your Drupal installation root'),
-  );
-
   return system_settings_form($form);
 }

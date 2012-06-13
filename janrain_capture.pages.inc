@@ -182,7 +182,7 @@ OAUTH_END;
  */
 function janrain_capture_profile() {
   $method = isset($_GET['method']) ? $_GET['method'] : '';
-  $callback = isset($_GET['callback']) ? $_GET['callback'] : 'CAPTURE.closeProfileEditor';
+  $callback = isset($_GET['callback']) ? $_GET['callback'] : 'Drupal.janrainCapture.closeProfileEditor';
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
   $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));

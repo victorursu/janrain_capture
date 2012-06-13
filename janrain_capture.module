@@ -8,6 +8,92 @@
  */
 
 /**
+ * Implements hook_init().
+ */
+function janrain_capture_init() {
+
+  $janrain_capture_main = variable_get('janrain_capture_main', array());
+  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
+
+  // Don't do anything if the module settings have not been configured.
+  if (!isset($janrain_capture_main['capture_address'])
+    || !isset($janrain_capture_main['capture_client_id'])
+    || !isset($janrain_capture_main['capture_client_secret'])) {
+    return;
+  }
+  $capture_sso_address = !empty($janrain_capture_optional['capture_sso_address'])
+    ? $janrain_capture_optional['capture_sso_address'] : '';
+  $capture_client_id = !empty($janrain_capture_main['capture_client_id'])
+    ? $janrain_capture_main['capture_client_id'] : '';
+
+  $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
+  $link = url($path, array('absolute' => TRUE));
+  $uri_opts = array('query' => array('origin' => urlencode($link)), 'absolute' => TRUE);
+  $settings = array(
+    'janrainCapture' => array(
+      'profile_sync_url' => url('janrain_capture/profile_sync', $uri_opts),
+      'token_expired_url' => url('janrain_capture/token_expired/' . drupal_get_token('janrain_capture_token_expired')),
+      'logout_url' => url('user/logout', array('absolute' => TRUE)),
+    ),
+  );
+  if (!empty($capture_sso_address)) {
+    $settings['janrainCapture']['sso_address'] = $capture_sso_address;
+  }
+  if (!empty($janrain_capture_optional['backplane_server'])
+    && !empty($janrain_capture_optional['backplane_bus_name'])) {
+    $settings['janrainCapture']['backplane_server'] = $janrain_capture_optional['backplane_server'];
+    $settings['janrainCapture']['backplane_bus_name'] = $janrain_capture_optional['backplane_bus_name'];
+  }
+  drupal_add_js($settings, 'setting');
+
+  $scripts = array(
+    'file' => array(),
+    'inline' => array(),
+    'external' => array(),
+  );
+  $scripts['file'][] = drupal_get_path('module', 'janrain_capture') . '/janrain_capture.js';
+  $scripts['external'][] = 'https://'
+    . (!empty($janrain_capture_optional['captureui_address'])
+      ? $janrain_capture_optional['captureui_address']
+      : $janrain_capture_main['capture_address'])
+    . '/cdn/javascripts/capture_client.js';
+
+
+  if (!empty($capture_sso_address)) {
+    $scripts['external'][] = "https://$capture_sso_address/sso.js";
+    $scripts['inline'][] = 'JANRAIN.SSO.CAPTURE.check_login({
+  sso_server: "https://' . $capture_sso_address . '",
+  client_id: "' . $capture_client_id . '",
+  redirect_uri: "' . url('janrain_capture/oauth', array('absolute' => TRUE)) . '",
+  logout_uri: "' . url('user/logout', array('absolute' => TRUE)) . '",
+  xd_receiver: "' . url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html"
+});';
+  }
+
+  if (!empty($janrain_capture_optional['backplane_js_path'])) {
+    $scripts['external'][] = $janrain_capture_optional['backplane_js_path'];
+  }
+
+  if (isset($_SESSION['janrain_capture_password_recover']) && $_SESSION['janrain_capture_password_recover'] == TRUE) {
+    $url = url('janrain_capture/profile', array(
+      'absolute' => TRUE,
+      'query' => array(
+        'method' => '_change_password',
+        'callback' => 'Drupal.janrainCapture.closeRecoverPassword',
+      ),
+    ));
+    $scripts['inline'][] = 'jQuery(function($) {Drupal.janrainCapture.passwordRecover(' . $url .')});';
+    $_SESSION['janrain_capture_password_recover'] = FALSE;
+  }
+
+  foreach (array_keys($scripts) as $type) {
+    foreach ($scripts[$type] as $s) {
+      drupal_add_js($s, array('type' => $type));
+    }
+  }
+}
+
+/**
  * Implements hook_menu().
  */
 function janrain_capture_menu() {
@@ -92,13 +178,13 @@ function janrain_capture_url($options = NULL) {
       }
       $defaults = array(
         'action' => 'signin',
-        'recover_password_callback' => 'CAPTURE.closeRecoverPassword',
+        'recover_password_callback' => 'Drupal.janrainCapture.closeRecoverPassword',
         'response_type' => 'code',
       );
     }
     else {
       $defaults = array(
-        'callback' => 'CAPTURE.closeProfileEditor',
+        'callback' => 'Drupal.janrainCapture.closeProfileEditor',
       );
     }
     $args = array_merge($required, $defaults, $options);

@@ -11,124 +11,59 @@
  * Implements hook_init().
  */
 function janrain_capture_ui_init() {
-  global $user;
-
-  $janrain_capture_main = variable_get('janrain_capture_main', array());
-  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
-  $janrain_capture_dependencies = variable_get('janrain_capture_dependencies', array());
-
-  // Don't do anything if the module settings have not been configured.
-  if (!isset($janrain_capture_main['capture_address'])
-    || !isset($janrain_capture_main['capture_client_id'])
-    || !isset($janrain_capture_main['capture_client_secret'])) {
-    return;
-  }
-  $capture_sso_address = !empty($janrain_capture_optional['capture_sso_address'])
-    ? $janrain_capture_optional['capture_sso_address'] : '';
-  $capture_client_id = !empty($janrain_capture_main['capture_client_id'])
-    ? $janrain_capture_main['capture_client_id'] : '';
-
-  $uri_opts = array('absolute' => TRUE);
-  if ($_GET['q']) {
-    $uri_opts['query'] = array('destination' => $_GET['q']);
-  }
-
-  $settings = array(
-    'janrainCapture' => array(
-      'profile_sync_url' => url('janrain_capture/profile_sync', $uri_opts),
-      'token_expired_url' => url('janrain_capture/token_expired/' . drupal_get_token('janrain_capture_token_expired')),
-      'logout_url' => url('user/logout', array('absolute' => TRUE)),
+  $js_css = array(
+    'js' => array(
+      'fancybox' => 'jquery.fancybox-1.3.4.pack.js',
     ),
+    'css' => array(
+      'fancybox' => 'jquery.fancybox-1.3.4.css',
+    )
   );
-  if (!empty($capture_sso_address)) {
-    $settings['janrainCapture']['sso_address'] = $capture_sso_address;
-  }
-  if (!empty($janrain_capture_optional['backplane_server'])
-    && !empty($janrain_capture_optional['backplane_bus_name'])) {
-    $settings['janrainCapture']['backplane_server'] = $janrain_capture_optional['backplane_server'];
-    $settings['janrainCapture']['backplane_bus_name'] = $janrain_capture_optional['backplane_bus_name'];
-  }
-  drupal_add_js($settings, 'setting');
 
-  $scripts = array(
-    'module' => array(),
-    'inline' => array(),
-    'external' => array(),
-  );
-  $scripts['external'][] = 'https://'
-    . (!empty($janrain_capture_optional['captureui_address'])
-      ? $janrain_capture_optional['captureui_address']
-      : $janrain_capture_main['capture_address'])
-    . '/cdn/javascripts/capture_client.js';
-  $scripts['module'][] = !empty($janrain_capture_dependencies['capture_json2'])
-    ? $janrain_capture_dependencies['capture_json2']
-    : 'sites/all/libraries/json2/json2.js';
-  $scripts['module'][] = !empty($janrain_capture_dependencies['capture_fancy_js'])
-    ? $janrain_capture_dependencies['capture_fancy_js']
-    : 'sites/all/libraries/fancybox/jquery.fancybox-1.3.4.pack.js';
-  $scripts['module'][] = drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js';
-
-  $styles = array();
-  $styles[] = !empty($janrain_capture_dependencies['capture_fancy_css'])
-    ? $janrain_capture_dependencies['capture_fancy_css']
-    : 'sites/all/libraries/fancybox/jquery.fancybox-1.3.4.css';
-
-  if (!empty($capture_sso_address)) {
-    $scripts['external'][] = "https://$capture_sso_address/sso.js";
-    $scripts['inline'][] = 'JANRAIN.SSO.CAPTURE.check_login({
-  sso_server: "https://' . $capture_sso_address . '",
-  client_id: "' . $capture_client_id . '",
-  redirect_uri: "' . url('janrain_capture/oauth', array('absolute' => TRUE)) . '",
-  logout_uri: "' . url('user/logout', array('absolute' => TRUE)) . '",
-  xd_receiver: "' . url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html"
-});';
-  }
-
-  if (!empty($janrain_capture_optional['backplane_js_path'])) {
-    $scripts['external'][] = $janrain_capture_optional['backplane_js_path'];
-  }
-
-  if (isset($_SESSION['janrain_capture_password_recover']) && $_SESSION['janrain_capture_password_recover'] == TRUE) {
-    $scripts['inline'][] = 'jQuery(function($) {
-  $.fancybox({
-    type: "iframe",
-    href: "' . url('janrain_capture/profile', array(
-      'absolute' => TRUE,
-      'query' => array(
-        'method' => '_change_password',
-        'callback' => 'CAPTURE.closeRecoverPassword',
-      ),
-    )) . '",
-    padding: 0,
-    scrolling: "no",
-    autoScale: true,
-    width: 666,
-    autoDimensions: false
-  });
-});';
-    $_SESSION['janrain_capture_password_recover'] = FALSE;
-  }
-
-  if (isset($scripts['external']) && is_array($scripts['external'])) {
-    foreach ($scripts['external'] as $s) {
-      drupal_add_js($s, array('type' => 'external'));
+  foreach ($js_css as $type => $files) {
+    foreach ($files as $name => $filename) {
+      // Find the location of the library file and add it using the appropriate
+      // function, i.e. drupal_add_js or drupal_add_css.
+      $full_path = janrain_capture_ui_get_library_path($name) . '/' . $filename;
+      $drupal_add = sprintf('drupal_add_%s', $type);
+      $drupal_add($full_path, array('every_page' => TRUE));
     }
   }
-  if (isset($scripts['module']) && is_array($scripts['module'])) {
-    foreach ($scripts['module'] as $s) {
-      drupal_add_js($s, array('type' => 'file'));
+  // Finally, add the custom JavaScript.
+  drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js', array('every_paage' => TRUE));
+}
+
+/**
+ * Find the location of library JS and CSS files.
+ */
+function janrain_capture_ui_get_library_path($name) {
+  $lib_paths = &drupal_static(__FUNCTION__, array());
+  if (!isset($lib_paths[$name])) {
+    $cid = 'janrain_capture_libraries';
+    $cache = cache_get($cid);
+
+    if (!empty($cache->data)) {
+      $lib_paths = $cache->data;
+      if (isset($lib_paths[$name])) {
+        return $lib_paths[$name];
+      }
     }
-  }
-  if (isset($scripts['inline']) && is_array($scripts['inline'])) {
-    foreach ($scripts['inline'] as $s) {
-      drupal_add_js($s, array('type' => 'inline'));
+
+    // Use Libraries module, if available, to find the correct path.
+    if (function_exists('libraries_get_path')) {
+      $lib_path = libraries_get_path($name);
+      if (!empty($lib_path)) {
+        $lib_paths[$name] = $lib_path;
+      }
     }
-  }
-  if (is_array($styles)) {
-    foreach ($styles as $s) {
-      drupal_add_css($s);
+
+    // If we still haven't found a path, assume it's at sites/all/libraries
+    if (!isset($lib_paths[$name])) {
+      $lib_paths[$name] = 'sites/all/libraries/' . $name;
     }
+    cache_set($cid, $lib_paths);
   }
+  return $lib_paths[$name];
 }
 
 /**

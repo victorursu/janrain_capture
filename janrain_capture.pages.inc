@@ -42,22 +42,19 @@ function janrain_capture_oauth() {
       $_SESSION['janrain_capture_profile'] = $profile;
 
       $user_info = array(
-        'name' => janrain_capture_profile_field($profile),
-        'mail' => $profile['result']['email'],
         'status' => 1,
       );
-
-      $user_info = janrain_capture_fields_array($user_info, $profile['result']);
-
-      $account = user_external_load($profile['result']['uuid']);
       $new_user = FALSE;
 
-      // No user was found with our Capture uuid.
-      if ($account === FALSE) {
-        // Look for a local user with the same email address.
+      if (!$account = user_external_load($profile['result']['uuid'])) {
+        $account = new stdClass();
+      }
+
+      if (!isset($account->uid)) {
+        // No user was found with our Capture uuid. Look for a local user with
+        // // the same email address.
         $local_user = reset(user_load_multiple(array(), array('mail' => $profile['result']['email'])));
         if ($local_user) {
-
           // Are we configured to match users based on email?
           if (isset($janrain_capture_fields['capture_match_email']) && $janrain_capture_fields['capture_match_email']) {
             // Check to see if this user is already mapped to a Capture uuid.
@@ -84,7 +81,8 @@ function janrain_capture_oauth() {
         // No local users with matching email. Create a new one.
         else {
           $user_info['pass'] = user_password();
-          $account = user_save(NULL, $user_info);
+          janrain_capture_sync_account($account, $profile['result']);
+          $account = user_save($account, $user_info);
           $new_user = TRUE;
           if (!$account->uid) {
             $failed_create = module_invoke_all('janrain_capture_failed_create');
@@ -97,8 +95,9 @@ function janrain_capture_oauth() {
           }
         }
       }
-      // We found the user! Re-sync Capture data to make sure we're up to date.
       else {
+        // We found the user! Re-sync Capture data to make sure we're up to date.
+        janrain_capture_sync_account($account, $profile['result']);
         $account = user_save($account, $user_info);
       }
 
@@ -219,14 +218,9 @@ function janrain_capture_profile_sync() {
     return;
   }
 
-  $user_data = array(
-    'name' => janrain_capture_profile_field($profile),
-    'mail' => $profile['result']['email'],
-  );
-
-  $merged_data = janrain_capture_fields_array($user_data, $profile['result']);
-
-  if ($account = user_save($user, $merged_data)) {
+  $account = $user;
+  janrain_capture_sync_account($account, $profile['result']);
+  if ($account = user_save($account)) {
     $profile_updated_hook = module_invoke_all('janrain_capture_user_profile_updated', $profile['result'], $account);
     if (empty($profile_updated_hook) || !in_array(FALSE, $profile_updated_hook)) {
       drupal_goto();
@@ -236,6 +230,22 @@ function janrain_capture_profile_sync() {
     drupal_set_message(t('We were unable to complete your request.'), 'error');
     watchdog('janrain_capture', 'Failed to save Capture data to user', array(), WATCHDOG_ERROR);
   }
+}
+
+/**
+ * Modifies the user account with values from the Janrain Capture profile array.
+ *
+ * Invokes a hook to allow other modules to modify the account as well.
+ *
+ * @param $account
+ *   The account object to modify with values from the Janrain Capture profile
+ * @param array $profile
+ *   The Janrain Capture profile array.
+ */
+function janrain_capture_sync_account($account, $profile) {
+  $account->name = janrain_capture_profile_field($profile);
+  $account->mail = $profile['email'];
+  module_invoke_all('janrain_capture_profile_sync', $account, $profile);
 }
 
 /**
@@ -249,33 +259,15 @@ function janrain_capture_profile_field($profile) {
     : 'email';
   if (strpos($name, '.')) {
     $names = explode('.', $name);
-    $value = $profile['result'];
+    $value = $profile;
     foreach ($names as $n) {
       $value = $value[$n];
     }
     return $value;
   }
   else {
-    return $profile['result'][$name];
+    return $profile[$name];
   }
-}
-
-/**
- * Function to create the array of user data to save.
- */
-function janrain_capture_fields_array($user_data, $profile) {
-  $fields = module_invoke_all('janrain_capture_fields_array', $profile);
-  if (is_array($fields)) {
-    foreach ($fields as &$f) {
-      if (is_array($f)) {
-        $f = $f[0];
-      }
-    }
-  }
-  if (!empty($fields) && is_array($fields)) {
-    $user_data = array_merge($user_data, $fields);
-  }
-  return $user_data;
 }
 
 /**

@@ -60,25 +60,29 @@ function hook_janrain_capture_user_profile_updated($capture_profile, $account) {
 /**
  * Add Capture attributes to sync to local user fields
  *
- * This hook is executed during the construction of the user fields array. By
- * default this module will sync the 'email' profile field with Drupal's 'mail'
- * column and whichever field is specified in the Janrain Capture settings to
- * use for the 'name' column. Use this hook to return an array of key => value
- * pairs to sync.
+ * This hook allows modules to alter the user account object based on Janrain
+ * Capture profile data. It is invoked whenever a user logs in or updates their
+ * profile in Janrain Capture.
+ *
+ * The hook can be used in conjunction with Entity API module to set the values
+ * of Field API fields on the user object, or without Entity API to alter any
+ * properties (including fields, but the full array stucture of the field would
+ * need to be provided) on the object.
+ *
+ * @param $account
+ *   The user account to sync
  *
  * @param array $capture_profile
  *   The profile data returned from the user's Capture record
- *
- * @return array
- *   Key/value pairs of data to sync between Capture and Drupal
  */
-function hook_janrain_capture_fields_array($capture_profile) {
-  // Sync givenName and familyName to custom fields created
-  // using the Drupal Profile module.
-  return array(
-    'profile_first_name' => $capture_profile['givenName'],
-    'profile_last_name' => $capture_profile['familyName'],
-  );
+function hook_janrain_capture_janrain_capture_profile_sync($account, $capture_profile) {
+  // This example uses Entity API module to alter the 'field_gender' value based
+  // on what's received from Janrain Capture. The $account parameter is an object
+  // and so it is passed by reference.
+  if (isset($capture_profile['gender'])) {
+    $account_wrapper = entity_metadata_wrapper('user', $account);
+    $account_wrapper->field_gender = $capture_profile['gender'];
+  }
 }
 
 /**

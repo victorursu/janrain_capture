@@ -26,9 +26,10 @@ function janrain_capture_init() {
   $capture_client_id = !empty($janrain_capture_main['capture_client_id'])
     ? $janrain_capture_main['capture_client_id'] : '';
 
-  $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
-  $link = url($path, array('absolute' => TRUE));
-  $uri_opts = array('query' => array('origin' => urlencode($link)), 'absolute' => TRUE);
+  $uri_opts = array('absolute' => TRUE);
+  if ($_GET['q']) {
+    $uri_opts['query'] = array('destination' => $_GET['q']);
+  }
   $settings = array(
     'janrainCapture' => array(
       'profile_sync_url' => url('janrain_capture/profile_sync', $uri_opts),

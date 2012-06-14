@@ -11,6 +11,25 @@
  * Implements hook_init().
  */
 function janrain_capture_ui_init() {
+  $js_css = janrain_capture_ui_js_css();
+
+  foreach ($js_css as $type => $files) {
+    foreach ($files as $name => $filename) {
+      // Find the location of the library file and add it using the appropriate
+      // function, i.e. drupal_add_js or drupal_add_css.
+      $full_path = janrain_capture_ui_get_library_path($name) . '/' . $filename;
+      $drupal_add = 'drupal_add_' . $type;
+      $drupal_add($full_path, array('every_page' => TRUE));
+    }
+  }
+  // Finally, add the custom JavaScript.
+  drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js', array('every_page' => TRUE));
+}
+
+/**
+ * Helper function as a centralized list of JS and CSS files.
+ */
+function janrain_capture_ui_js_css() {
   $js_css = array(
     'js' => array(
       'fancybox' => 'jquery.fancybox-1.3.4.pack.js',
@@ -19,18 +38,7 @@ function janrain_capture_ui_init() {
       'fancybox' => 'jquery.fancybox-1.3.4.css',
     )
   );
-
-  foreach ($js_css as $type => $files) {
-    foreach ($files as $name => $filename) {
-      // Find the location of the library file and add it using the appropriate
-      // function, i.e. drupal_add_js or drupal_add_css.
-      $full_path = janrain_capture_ui_get_library_path($name) . '/' . $filename;
-      $drupal_add = sprintf('drupal_add_%s', $type);
-      $drupal_add($full_path, array('every_page' => TRUE));
-    }
-  }
-  // Finally, add the custom JavaScript.
-  drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js', array('every_paage' => TRUE));
+  return $js_css;
 }
 
 /**

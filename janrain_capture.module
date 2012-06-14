@@ -45,7 +45,7 @@ function janrain_capture_init() {
     $settings['janrainCapture']['backplane_server'] = $janrain_capture_optional['backplane_server'];
     $settings['janrainCapture']['backplane_bus_name'] = $janrain_capture_optional['backplane_bus_name'];
   }
-  drupal_add_js($settings, 'setting');
+  drupal_add_js($settings, 'setting', TRUE);
 
   $scripts = array(
     'file' => array(),
@@ -89,7 +89,7 @@ function janrain_capture_init() {
 
   foreach (array_keys($scripts) as $type) {
     foreach ($scripts[$type] as $s) {
-      drupal_add_js($s, array('type' => $type));
+      drupal_add_js($s, array('type' => $type), TRUE);
     }
   }
 }

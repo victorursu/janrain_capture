@@ -6,7 +6,7 @@
  */
 
 /**
- * Removes unused variables when uninstalling.
+ * Implements hook_uninstall().
  */
 function janrain_capture_uninstall() {
   variable_del('janrain_capture_main');

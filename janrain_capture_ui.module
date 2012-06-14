@@ -71,17 +71,9 @@ function janrain_capture_ui_get_library_path($name) {
  */
 function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
   global $user;
-  $link = l(
-    t('Edit Profile'),
-    'janrain_capture/profile',
-    array(
-      'absolute' => TRUE,
-      'attributes' => array(
-        'class' => array('iframe', 'fancy', 'janrain_capture_anchor'),
-      ),
-    )
-  );
-  $markup = '<div class="form-item">' . $link . '</div>';
+  $link = janrain_capture_profile_link();
+  $link['#title'] = t('Edit Profile');
+  $markup = '<div class="form-item">' . drupal_render($link) . '</div>';
   if ($user->uid == $form['#user']->uid) {
     $form['account'] = array(
       '#type' => 'fieldset',
@@ -97,23 +89,13 @@ function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
 }
 
 /**
- * Implements hook_menu_alter().
- */
-function janrain_capture_ui_menu_alter(&$items) {
-  $items['user/register']['access callback'] = 'user_access';
-  $items['user/register']['access arguments'] = array('administer users');
-
-  $items['user/password']['access callback'] = 'user_access';
-  $items['user/password']['access arguments'] = array('administer users');
-}
-
-/**
  * Implements hook_block_info().
  */
 function janrain_capture_ui_block_info() {
   return array(
     'janrain_capture' => array(
       'info' => t('Janrain Capture'),
+      'cache' => DRUPAL_NO_CACHE,
     ),
   );
 }
@@ -122,49 +104,14 @@ function janrain_capture_ui_block_info() {
  * Implements hook_block_view().
  */
 function janrain_capture_ui_block_view($delta) {
-  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
+  if (!janrain_capture_configured()) {
+    return array();
+  }
+  $block = array();
   switch ($delta) {
     case 'janrain_capture':
-      global $user;
-      $items = array();
-      if ($user->uid) {
-        $items[] = l(
-          t('View / Edit Profile'),
-          'janrain_capture/profile',
-          array(
-            'absolute' => TRUE,
-            'attributes' => array(
-              'class' => array('iframe', 'fancy', 'janrain_capture_anchor'),
-            ),
-          )
-        );
-        if ($janrain_capture_optional['capture_sso_address']) {
-          $items[] = '<a href="javascript:CAPTURE.logout()">' . t('Log out') . '</a>';
-        }
-        else {
-          $items[] = l(t('Log out'), 'user/logout');
-        }
-      }
-      else {
-        $items[] = l(
-          t('Register / Sign in'),
-          janrain_capture_url(),
-          array(
-            'attributes' => array(
-              'class' => array(
-                'iframe',
-                'fancy',
-                'janrain_capture_anchor',
-                'janrain_capture_signin',
-              ),
-            ),
-          )
-        );
-      }
-      $block = array(
-        'subject' => t('Janrain Capture'),
-        'content' => theme('item_list', array('items' => $items)),
-      );
+      $block['subject'] = t('Janrain Capture');
+      $block['content'] = janrain_capture_block_content();
       break;
   }
 

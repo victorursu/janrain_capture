@@ -9,71 +9,33 @@
  * Sets up the admin settings form for this module.
  */
 function janrain_capture_settings() {
+  $form['description'] = array(
+    '#markup' => '<p>' . t('Connection to Janrain Capture requires a subscription. Once subscribed, use the values on the Janrain dashboard to complete the fields below to connect the service.') . '</p>',
+  );
 
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $form['janrain_capture_main'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Janrain Capture Application Settings'),
+    '#title' => t('Application Settings'),
     '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
   $form['janrain_capture_main']['capture_client_id'] = array(
     '#type' => 'textfield',
-    '#title' => t('Janrain Capture Client ID'),
+    '#title' => t('Client ID'),
     '#default_value' => !empty($janrain_capture_main['capture_client_id']) ? $janrain_capture_main['capture_client_id'] : '',
-    '#description' => t('Your Janrain Capture Client ID'),
   );
   $form['janrain_capture_main']['capture_client_secret'] = array(
     '#type' => 'textfield',
-    '#title' => t('Janrain Capture Client Secret'),
+    '#title' => t('Client Secret'),
     '#default_value' => !empty($janrain_capture_main['capture_client_secret']) ? $janrain_capture_main['capture_client_secret'] : '',
-    '#description' => t('Your Janrain Capture Client Secret'),
   );
   $form['janrain_capture_main']['capture_address'] = array(
     '#type' => 'textfield',
-    '#title' => t('Janrain Capture Address'),
+    '#title' => t('Capture URL'),
     '#default_value' => !empty($janrain_capture_main['capture_address']) ? $janrain_capture_main['capture_address'] : '',
-    '#description' => t('Your Janrain Capture Address (e.g. myapp.janraincapture.com)'),
-  );
-
-  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
-  $form['janrain_capture_optional'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Optional Application Settings'),
-    '#tree' => TRUE,
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-  $form['janrain_capture_optional']['capture_sso_address'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Janrain Capture SSO Address'),
-    '#default_value' => !empty($janrain_capture_optional['capture_sso_address']) ? $janrain_capture_optional['capture_sso_address'] : '',
-    '#description' => t('Your Janrain Capture SSO Address (e.g. myapp.janrainsso.com)'),
-  );
-  $form['janrain_capture_optional']['captureui_address'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Janrain CaptureUI Address'),
-    '#default_value' => !empty($janrain_capture_optional['captureui_address']) ? $janrain_capture_optional['captureui_address'] : '',
-    '#description' => t('Your Janrain CaptureUI Address (defaults to Janrain Capture Address)'),
-  );
-  $form['janrain_capture_optional']['backplane_server'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Backplane Server Base URL'),
-    '#default_value' => !empty($janrain_capture_optional['backplane_server']) ? $janrain_capture_optional['backplane_server'] : '',
-    '#description' => t('Your Backplane Server Base URL'),
-  );
-  $form['janrain_capture_optional']['backplane_bus_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Backplane Bus Name'),
-    '#default_value' => !empty($janrain_capture_optional['backplane_bus_name']) ? $janrain_capture_optional['backplane_bus_name'] : '',
-    '#description' => t('Your Backplane Bus Name'),
-  );
-  $form['janrain_capture_optional']['backplane_js_path'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Backplane JS Path'),
-    '#default_value' => !empty($janrain_capture_optional['backplane_js_path']) ? $janrain_capture_optional['backplane_js_path'] : '',
-    '#description' => t('The path to backplane.js'),
+    '#description' => t('For example, myapp.janraincapture.com.'),
   );
 
   $janrain_capture_fields = variable_get('janrain_capture_fields', array());
@@ -86,15 +48,15 @@ function janrain_capture_settings() {
   );
   $form['janrain_capture_fields']['capture_name_field'] = array(
     '#type' => 'textfield',
-    '#title' => t('Profile Name Field'),
+    '#title' => t('Capture profile field name'),
     '#default_value' => !empty($janrain_capture_fields['capture_name_field']) ? $janrain_capture_fields['capture_name_field'] : 'email',
-    '#description' => t('The profile field to use for the local username. Must be unique.'),
+    '#description' => t('The Capture profile field that specifies the username when Capture creates a new user on this site.'),
   );
   $form['janrain_capture_fields']['capture_match_email'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Match Users on Email'),
+    '#title' => t('Match users by email address'),
     '#default_value' => !empty($janrain_capture_fields['capture_match_email']) ? $janrain_capture_fields['capture_match_email'] : 0,
-    '#description' => t('Match authenticated Capture users with a local record with the same email. Can only be enabled in conjunction with the Enforce Email Verification setting.'),
+    '#description' => t('Associate user and Capture accounts if both share the same email address.'),
     '#states' => array(
       'enabled' => array(
         ':input[name="janrain_capture_fields[capture_enforce_verification]"]' => array('checked' => TRUE),
@@ -103,9 +65,42 @@ function janrain_capture_settings() {
   );
   $form['janrain_capture_fields']['capture_enforce_verification'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enforce Email Verification'),
+    '#title' => t('Require email verification'),
     '#default_value' => !empty($janrain_capture_fields['capture_enforce_verification']) ? $janrain_capture_fields['capture_enforce_verification'] : 0,
     '#description' => t('Prompt users who have not verified their email address to do so before completing authentication'),
+  );
+
+  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
+  $form['janrain_capture_optional'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced Settings (optional)'),
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['janrain_capture_optional']['capture_sso_address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Single sign on URL'),
+    '#default_value' => !empty($janrain_capture_optional['capture_sso_address']) ? $janrain_capture_optional['capture_sso_address'] : '',
+    '#description' => t('For example, myapp.janrainsso.com.'),
+  );
+  $form['janrain_capture_optional']['backplane_server'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backplane server base URL'),
+    '#default_value' => !empty($janrain_capture_optional['backplane_server']) ? $janrain_capture_optional['backplane_server'] : '',
+    '#description' => t('For example, http://backplane1.janrainbackplane.com/v1.1.'),
+  );
+  $form['janrain_capture_optional']['backplane_bus_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backplane bus name'),
+    '#default_value' => !empty($janrain_capture_optional['backplane_bus_name']) ? $janrain_capture_optional['backplane_bus_name'] : '',
+    '#description' => t('For example, domain.com.'),
+  );
+  $form['janrain_capture_optional']['backplane_js_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backplane JavaScript URL'),
+    '#default_value' => !empty($janrain_capture_optional['backplane_js_path']) ? $janrain_capture_optional['backplane_js_path'] : '',
+    '#description' => t('The URL to your site\'s backplane.js file.'),
   );
 
   $form['janrain_capture_enforce'] = array(

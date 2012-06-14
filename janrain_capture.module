@@ -133,7 +133,7 @@ function janrain_capture_menu() {
 
   $items['admin/config/people/janrain_capture'] = array(
     'title' => 'Janrain Capture',
-    'description' => 'Configure settings for Janrain Capture module.',
+    'description' => t('Connect to Janrain Capture service for centralized storage of social profile data.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_settings'),
     'access arguments' => array('administer site configuration'),

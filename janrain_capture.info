@@ -1,5 +1,5 @@
 name = Janrain Capture Core
-description = Integrates Janrain Capture for Drupal authentication
+description = Enable centralized storage of social profile data to easily manage it and target reporting using the Janrain Capture service.
 package = Janrain Capture
 core = 7.x
 files[] = janrain_capture.api.inc

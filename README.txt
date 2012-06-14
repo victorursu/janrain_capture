@@ -16,10 +16,14 @@ http://www.janraincapture.com/docs
 INSTALLATION
 ------------
 
-1) The janrain_capture_ui module in this package relies on the jQuery Update
-module to be installed and enabled to update jQuery to 1.5.2 and for the
+1) The janrain_capture_ui module in this package relies on the
 Fancybox jQuery library version 1.3.4 to be installed at:
 sites/all/libraries/fancybox/jquery.fancybox-1.3.4.pack.js
+
+download and unzip:
+http://fancybox.googlecode.com/files/jquery.fancybox-1.3.4.zip
+
+Move jquery.fancybox-1.3.4/fancybox to sites/all/libraries/
 
 You also have the option of building out your own UI with your preferred iframe
 tools as well.

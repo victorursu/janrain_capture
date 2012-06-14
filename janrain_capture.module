@@ -53,7 +53,7 @@ function janrain_capture_init() {
     'external' => array(),
   );
   $scripts['file'][] = drupal_get_path('module', 'janrain_capture') . '/janrain_capture.js';
-  $scripts['external'][] = 'http://d7v0k4dt27zlp.cloudfront.net/assets/capture_client.js';
+  $scripts['external'][] = 'https://d7v0k4dt27zlp.cloudfront.net/assets/capture_client.js';
 
   if (!empty($capture_sso_address)) {
     $scripts['external'][] = "https://$capture_sso_address/sso.js";

@@ -45,7 +45,7 @@ function janrain_capture_init() {
     $settings['janrainCapture']['backplane_server'] = $janrain_capture_optional['backplane_server'];
     $settings['janrainCapture']['backplane_bus_name'] = $janrain_capture_optional['backplane_bus_name'];
   }
-  drupal_add_js($settings, 'setting', TRUE);
+  drupal_add_js($settings, array('type' => 'setting', 'every_page' => TRUE));
 
   $scripts = array(
     'file' => array(),
@@ -84,7 +84,7 @@ function janrain_capture_init() {
 
   foreach (array_keys($scripts) as $type) {
     foreach ($scripts[$type] as $s) {
-      drupal_add_js($s, array('type' => $type), TRUE);
+      drupal_add_js($s, array('type' => $type, 'every_page' => TRUE, 'weight' => 1));
     }
   }
 }
@@ -273,10 +273,9 @@ function janrain_capture_block_view_user_login_alter(&$data, $block) {
     // via Capture or, if already logged in, a link to the profile edit screen.
 
     global $user;
-    if ($user->uid) {
-      $data['subject'] = t('My Account');
+    if (!$user->uid) {
+      $data['content'] = janrain_capture_block_content();
     }
-    $data['content'] = janrain_capture_block_content();
   }
 }
 

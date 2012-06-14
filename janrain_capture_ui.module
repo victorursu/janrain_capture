@@ -23,7 +23,7 @@ function janrain_capture_ui_init() {
     }
   }
   // Finally, add the custom JavaScript.
-  drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js', array('every_page' => TRUE));
+  drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js', array('every_page' => TRUE, 'weight' => 10));
 }
 
 /**

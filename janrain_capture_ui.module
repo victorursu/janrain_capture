@@ -11,6 +11,11 @@
  * Implements hook_init().
  */
 function janrain_capture_ui_init() {
+  // Don't do anything if the module settings have not been configured.
+  if (!janrain_capture_configured()) {
+    return;
+  }
+
   $js_css = janrain_capture_ui_js_css();
 
   foreach ($js_css as $type => $files) {

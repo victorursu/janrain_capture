@@ -12,15 +12,14 @@
  */
 function janrain_capture_init() {
 
+  // Don't do anything if the module settings have not been configured.
+  if (!janrain_capture_configured()) {
+    return;
+  }
+
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
 
-  // Don't do anything if the module settings have not been configured.
-  if (!isset($janrain_capture_main['capture_address'])
-    || !isset($janrain_capture_main['capture_client_id'])
-    || !isset($janrain_capture_main['capture_client_secret'])) {
-    return;
-  }
   $capture_sso_address = !empty($janrain_capture_optional['capture_sso_address'])
     ? $janrain_capture_optional['capture_sso_address'] : '';
   $capture_client_id = !empty($janrain_capture_main['capture_client_id'])

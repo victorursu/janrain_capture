@@ -84,19 +84,36 @@ function janrain_capture_ui_get_library_path($name) {
  */
 function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
   global $user;
-  $link = janrain_capture_profile_link();
-  $link['#title'] = t('Edit Profile');
-  $markup = '<div class="form-item">' . drupal_render($link) . '</div>';
-  if ($user->uid == $form['#user']->uid) {
+
+  if ($form['#user_category'] != 'account') {
+    // @todo - should core profile module tabs be blocked?
+    return;
+  }
+
+  $account = $form['#user'];
+  $enforce = variable_get('janrain_capture_enforce', FALSE);
+
+  if ($enforce || janrain_capture_mapping_exists($account->uid)) {
+    // Account information.
     $form['account'] = array(
       '#type' => 'fieldset',
-      '#title' => t('My Account'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
+      '#weight' => -10,
     );
-    $form['account']['description'] = array(
-      '#type' => 'markup',
-      '#markup' => $markup,
+    if ($user->uid == $account->uid) {
+      $link = janrain_capture_profile_link();
+      $link['#title'] = t('Edit Profile');
+    }
+    else {
+      $link = array('#markup' => t('Profile managed in Janrain Capture'));
+    }
+    $form['account']['janrain_capture_profile'] = array(
+      '#type' => 'item',
+      'link' => $link,
+    );
+    $form['account']['mail'] = array(
+      '#type' => 'item',
+      '#title' => t('E-mail address'),
+      '#markup' => check_plain($account->mail),
     );
   }
 }

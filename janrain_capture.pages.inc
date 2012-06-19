@@ -60,8 +60,7 @@ function janrain_capture_oauth() {
           // Are we configured to match users based on email?
           if (isset($janrain_capture_fields['capture_match_email']) && $janrain_capture_fields['capture_match_email']) {
             // Check to see if this user is already mapped to a Capture uuid.
-            $result = db_query("SELECT aid FROM {authmap} WHERE module = 'janrain_capture' AND uid = :uid", array(':uid' => $local_user->uid))->fetchAllKeyed();
-            if (count($result)) {
+            if (janrain_capture_mapping_exists($local_user->uid)) {
               $mapped_hook = module_invoke_all('janrain_capture_user_already_mapped');
               if (empty($mapped_hook) || !in_array(FALSE, $mapped_hook)) {
                 drupal_set_message(t('A user with this email address is already mapped.'), 'error');

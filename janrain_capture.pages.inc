@@ -42,6 +42,8 @@ function janrain_capture_oauth() {
       $_SESSION['janrain_capture_profile'] = $profile;
 
       $user_info = array(
+        'name' => janrain_capture_profile_field($profile['result']),
+        'mail' => $profile['result']['email'],
         'status' => 1,
       );
       $new_user = FALSE;
@@ -81,7 +83,6 @@ function janrain_capture_oauth() {
         // No local users with matching email. Create a new one.
         else {
           $user_info['pass'] = user_password();
-          janrain_capture_sync_account($account, $profile['result']);
           $account = user_save($account, $user_info);
           $new_user = TRUE;
           if (!$account->uid) {
@@ -95,11 +96,7 @@ function janrain_capture_oauth() {
           }
         }
       }
-      else {
-        // We found the user! Re-sync Capture data to make sure we're up to date.
-        janrain_capture_sync_account($account, $profile['result']);
-        $account = user_save($account, $user_info);
-      }
+
 
       $signin = TRUE;
       if ($account === FALSE) {
@@ -138,6 +135,9 @@ function janrain_capture_oauth() {
       if ($signin) {
         $form_state['uid'] = $account->uid;
         user_login_submit(array(), $form_state);
+        // Re-sync Capture data to make sure we're up to date.
+        janrain_capture_sync_account($account, $profile['result']);
+        $account = user_save($account, $user_info);
         module_invoke_all('janrain_capture_user_authenticated', $profile['result'], $account, $new_user);
       }
     }

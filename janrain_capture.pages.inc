@@ -218,7 +218,8 @@ function janrain_capture_profile_sync() {
     return;
   }
 
-  $account = $user;
+  // Make sure the account object is fully populated.
+  $account = user_load($user->uid);
   janrain_capture_sync_account($account, $profile['result']);
   if ($account = user_save($account)) {
     $profile_updated_hook = module_invoke_all('janrain_capture_user_profile_updated', $profile['result'], $account);

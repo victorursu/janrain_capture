@@ -148,6 +148,7 @@ function janrain_capture_oauth() {
     }
   }
   $front_page = url('<front>', array('absolute' => TRUE));
+  $signin_redirect = url('janrain_capture/signin_redirect', array('absolute' => TRUE));
 
   $output = <<<OAUTH_END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -156,14 +157,24 @@ function janrain_capture_oauth() {
   <body>
     <p>Please wait...</p>
     <script type="text/javascript">
+      var redirect_url = null;
+      var regex = /\#destination\=([^\&]*)/;
+      var match = regex.exec(window.parent.location.href);
+      if (match && match.length == 2) {
+        redirect_url = "{$signin_redirect}/?destination=" + decodeURIComponent(match[1]);
+      }
       if (window.location.href != window.parent.location.href) {
         if (window.parent.location.href.indexOf("logout") > 1) {
           window.parent.location.href = "{$front_page}";
         } else {
-          window.parent.location.reload();
+          if (redirect_url) {
+            window.parent.location.href = redirect_url;
+          } else {
+            window.parent.location.reload();
+          }
         }
       } else {
-        window.location.href = "{$front_page}";
+        window.location.href = redirect_url || "{$front_page}";
       }
     </script>
   </body>
@@ -172,6 +183,14 @@ OAUTH_END;
 
   print $output;
   return NULL;
+}
+
+/**
+ * Callback to redirect the user to the destination they were looking for before
+ * signing in via Capture.
+ */
+function janrain_capture_signin_redirect() {
+  drupal_goto();
 }
 
 /**

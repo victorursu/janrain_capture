@@ -34,6 +34,7 @@ function janrain_capture_init() {
       'profile_sync_url' => url('janrain_capture/profile_sync', $uri_opts),
       'token_expired_url' => url('janrain_capture/token_expired/' . drupal_get_token('janrain_capture_token_expired')),
       'logout_url' => url('user/logout', array('absolute' => TRUE)),
+      'enforce' => variable_get('janrain_capture_enforce', FALSE),
     ),
   );
   if (!empty($capture_sso_address)) {
@@ -155,6 +156,14 @@ function janrain_capture_token_expired_access($token) {
 }
 
 /**
+ * Helper function to determine if a user is associated with a Capture account.
+ */
+function janrain_capture_mapping_exists($uid) {
+  // Check to see if this user is already mapped to a Capture uuid.
+  return (bool) db_query("SELECT 1 FROM {authmap} WHERE module = 'janrain_capture' AND uid = :uid", array(':uid' => $uid))->fetchField();
+}
+
+/**
  * Checks whether the module has been configured.
  */
 function janrain_capture_configured() {
@@ -234,11 +243,10 @@ function janrain_capture_menu_alter(&$items) {
       // Override to be callbacks instead of tabs.
       $items[$key]['type'] = MENU_CALLBACK;
     }
-    $items['user']['access callback'] = 'user_access';
-    $items['user']['access arguments'] = array('administer users');
-
-    $items['user/password']['access callback'] = 'user_access';
-    $items['user/password']['access arguments'] = array('administer users');
+    // Let logged in users use the shortcut to their profile.
+    $items['user']['access callback'] = 'user_is_logged_in';
+    // All password reset requests should go via Capture.
+    $items['user/password']['access callback'] = FALSE;
   }
 }
 

@@ -47,6 +47,9 @@ function janrain_capture_init() {
   }
   drupal_add_js($settings, array('type' => 'setting', 'every_page' => TRUE));
 
+  // Add the jQuery BBQ plugin to handle destination redirects.
+  drupal_add_library('system', 'jquery.bbq', TRUE);
+
   $scripts = array(
     'file' => array(),
     'inline' => array(),
@@ -98,6 +101,14 @@ function janrain_capture_menu() {
     'title' => 'Capture Oauth Receiver',
     'page callback' => 'janrain_capture_oauth',
     'access callback' => 'user_is_anonymous',
+    'type' => MENU_CALLBACK,
+    'file' => 'janrain_capture.pages.inc',
+  );
+
+  $items['janrain_capture/signin_redirect'] = array(
+    'title' => 'Capture redirect page',
+    'page callback' => 'janrain_capture_signin_redirect',
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
     'file' => 'janrain_capture.pages.inc',
   );

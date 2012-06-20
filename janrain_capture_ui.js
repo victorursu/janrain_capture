@@ -34,12 +34,25 @@
 
       // Make all Capture signin and profile links appear in a fancybox.
       if ($.fn.fancybox) {
-        $(".janrain_capture_anchor", context).once("capture-ui").addClass('iframe').fancybox({
-          padding: 0,
-          scrolling: "no",
-          autoScale: true,
-          width: 666,
-          autoDimensions: false
+        $(".janrain_capture_anchor", context).once("capture-ui", function(){
+          var data = $(this).data();
+          $(this).addClass('iframe').fancybox({
+            padding: 0,
+            scrolling: "no",
+            autoScale: true,
+            width: 666,
+            autoDimensions: false,
+            onStart: function() {
+              if (data.destination) {
+                Drupal.janrainCapture.addDestination(data.destination);
+              }
+            },
+            onClosed: function() {
+              if (data.destination) {
+                Drupal.janrainCapture.removeDestination(data.destination);
+              }
+            }
+          });
         });
       }
     }

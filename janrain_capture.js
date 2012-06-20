@@ -27,6 +27,16 @@ Drupal.janrainCapture = {
         logout_uri: Drupal.settings.janrainCapture.logout_url
       });
     }
+  },
+  addDestination: function(destination) {
+    if ($.bbq) {
+      $.bbq.pushState({"destination": destination});
+    }
+  },
+  removeDestination: function() {
+    if ($.bbq) {
+      $.bbq.removeState('destination');
+    }
   }
 };
 
@@ -50,6 +60,15 @@ Drupal.behaviors.janrainCapture = {
         for (i = 0; i < length; i++) {
           link = links[i];
           $(link).addClass('janrain_capture_anchor janrain_capture_signin');
+          // If our login/register link has a destination param, we need to store
+          // this in its data property so that we can use the jQuery BBQ plugin
+          // to add it as a hash on the url.
+          var regex = /(?:\?|&)destination\=([^\&]*)/;
+          var match = regex.exec($(link).attr('href'));
+          if (match && match.length == 2) {
+            var destination = match[1];
+            $(link).data("destination", destination);
+          }
         }
       }
     }

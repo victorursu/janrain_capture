@@ -74,7 +74,7 @@ Drupal.behaviors.janrainCapture = {
     }
     if (typeof(settings.janrainCapture.backplane_server) != 'undefined'
       && typeof(settings.janrainCapture.backplane_bus_name) != 'undefined') {
-      Backplane(CAPTURE.bp_ready);
+      Backplane(Drupal.janrainCapture.bp_ready);
       Backplane.init({
         serverBaseURL: settings.janrainCapture.backplane_server,
         busName: settings.janrainCapture.backplane_bus_name

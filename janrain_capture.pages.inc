@@ -73,6 +73,7 @@ function janrain_capture_oauth() {
             }
           }
           else {
+            $account = FALSE;
             $user_exists_hook = module_invoke_all('janrain_capture_user_exists');
             if (empty($user_exists_hook) || !in_array(FALSE, $user_exists_hook)) {
               drupal_set_message(t('A user with this email address already exists.'), 'error');

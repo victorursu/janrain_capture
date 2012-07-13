@@ -46,6 +46,12 @@ function janrain_capture_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
+  $form['janrain_capture_fields']['capture_enforce_verification'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Require email verification'),
+    '#default_value' => !empty($janrain_capture_fields['capture_enforce_verification']) ? $janrain_capture_fields['capture_enforce_verification'] : 0,
+    '#description' => t('Prompt users who have not verified their email address to do so before completing authentication'),
+  );
   $form['janrain_capture_fields']['capture_match_email'] = array(
     '#type' => 'checkbox',
     '#title' => t('Match users by email address'),
@@ -56,12 +62,6 @@ function janrain_capture_settings() {
         ':input[name="janrain_capture_fields[capture_enforce_verification]"]' => array('checked' => TRUE),
       )
     ),
-  );
-  $form['janrain_capture_fields']['capture_enforce_verification'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Require email verification'),
-    '#default_value' => !empty($janrain_capture_fields['capture_enforce_verification']) ? $janrain_capture_fields['capture_enforce_verification'] : 0,
-    '#description' => t('Prompt users who have not verified their email address to do so before completing authentication'),
   );
   $form['janrain_capture_fields']['capture_map_profile_pic'] = array(
     '#type' => 'checkbox',

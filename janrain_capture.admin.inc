@@ -46,12 +46,6 @@ function janrain_capture_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  $form['janrain_capture_fields']['capture_name_field'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Capture profile field name'),
-    '#default_value' => !empty($janrain_capture_fields['capture_name_field']) ? $janrain_capture_fields['capture_name_field'] : 'email',
-    '#description' => t('The Capture profile field that specifies the username when Capture creates a new user on this site.'),
-  );
   $form['janrain_capture_fields']['capture_match_email'] = array(
     '#type' => 'checkbox',
     '#title' => t('Match users by email address'),
@@ -69,7 +63,25 @@ function janrain_capture_settings() {
     '#default_value' => !empty($janrain_capture_fields['capture_enforce_verification']) ? $janrain_capture_fields['capture_enforce_verification'] : 0,
     '#description' => t('Prompt users who have not verified their email address to do so before completing authentication'),
   );
-
+  $form['janrain_capture_fields']['capture_map_profile_pic'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Map profile pic'),
+    '#default_value' => isset($janrain_capture_fields['capture_map_profile_pic']) ? $janrain_capture_fields['capture_map_profile_pic'] : 1,
+    '#description' => t('Automatically map the Capture profile photo to the Drupal user profile picture.'),
+  );
+  $form['janrain_capture_fields']['capture_preferred_photo_variant'] = array(
+    '#type' => 'select',
+    '#title' => t('Preferred photo variant'),
+    '#options' => array(
+      'small' => t('Small'),
+      'normal' => t('Normal'),
+      'large' => t('Large'),
+      'square_thumbnail' => t('Square Thumbnail'),
+      'original' => t('Original')
+    ),
+    '#default_value' => isset($janrain_capture_fields['capture_preferred_photo_variant']) ? $janrain_capture_fields['capture_preferred_photo_variant'] : 'small',
+    '#description' => t('Select the photo variant to use from the Capture profile.'),
+  );
   $janrain_capture_optional = variable_get('janrain_capture_optional', array());
   $form['janrain_capture_optional'] = array(
     '#type' => 'fieldset',

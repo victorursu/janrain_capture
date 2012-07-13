@@ -143,6 +143,16 @@ function janrain_capture_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_settings'),
     'access arguments' => array('administer site configuration'),
+    'weight' => -4,
+    'file' => 'janrain_capture.admin.inc',
+  );
+  $items['admin/config/people/janrain_capture/settings'] = array(
+    'title' => 'Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('janrain_capture_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
     'file' => 'janrain_capture.admin.inc',
   );
 
@@ -361,4 +371,79 @@ function janrain_capture_block_content() {
     $items[] = janrain_capture_render_logout_link();
   }
   return theme('item_list', array('items' => $items));
+}
+
+/**
+ * Modifies the user account with values from the Janrain Capture profile array.
+ *
+ * Invokes a hook to allow other modules to modify the account as well.
+ *
+ * @param $account
+ *   The account object to modify with values from the Janrain Capture profile
+ * @param array $profile
+ *   The Janrain Capture profile array.
+ */
+function janrain_capture_sync_account($account, $profile) {
+  $account->mail = $profile['email'];
+  // Set the profile email address as the default username - this can be overridden
+  // either by implementing the janrain_capture_profile_sync hook or using the mapping
+  // submodule.
+  $account->name = $profile['email'];
+  // Set the uuid field value from the Capture uuid. Hardcoding LANGUAGE_NONE here
+  // should be ok as the field is not translatable.
+  $account->field_janrain_capture_uuid[LANGUAGE_NONE][0]['value'] = $profile['uuid'];
+
+  // Map the profile pic if configured to do so. This requires special handling.
+  $janrain_capture_fields = variable_get('janrain_capture_fields', array());
+  if (isset($janrain_capture_fields['capture_map_profile_pic']) && $janrain_capture_fields['capture_map_profile_pic']) {
+    if (!empty($profile['photos'])) {
+      $preferred = isset($janrain_capture_fields['capture_preferred_photo_variant']) ? $janrain_capture_fields['capture_preferred_photo_variant'] : 'small';
+      foreach($profile['photos'] as $variant) {
+        if ($variant['type'] == $preferred) {
+          _janrain_capture_update_picture($account, $variant);
+          break;
+        }
+      }
+    }
+    elseif (!empty($account->picture)) {
+      // We have a local picture, but picture was removed on server. Delete!
+      $account->picture = new stdClass();
+      db_delete('janrain_capture_photos')
+        ->condition('uid', $account->uid)
+        ->execute();
+    }
+  }
+
+  module_invoke_all('janrain_capture_profile_sync', $account, $profile);
+}
+
+/**
+ * Helper function for updating a user picture.
+ */
+function _janrain_capture_update_picture($account, $variant) {
+  $args = array(':uid' => $account->uid, ':uri' => $variant['value']);
+  if (empty($account->picture) || (!db_query('SELECT uid FROM {janrain_capture_photos} WHERE uid = :uid and uri = :uri', $args)->fetchField())) {
+    // Either first or updated user profile image. Download remote image,
+    // save locally and set user picture to this image.
+    $image_response = drupal_http_request($variant['value']);
+    if (($image_response->code == 200) && !empty($image_response->data)) {
+      $image_file = file_save_data($image_response->data);
+      if (!empty($image_file)) {
+        // Make the file non-permanent, so we can get it moved and
+        // renamed as a proper user picture on the righ path. (which
+        // happens inside user_save()).
+        $image_file->status = 0;
+        $image_file = file_save($image_file);
+        $account->picture = $image_file;
+        // Keep track of the remote image URI so we only download it once.
+        db_merge('janrain_capture_photos')
+          ->key(array('uid' => $account->uid))
+          ->fields(array(
+              'uid' => $account->uid,
+              'uri' => $variant['value'],
+          ))
+          ->execute();
+      }
+    }
+  }
 }

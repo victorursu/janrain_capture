@@ -39,16 +39,13 @@ function janrain_capture_oauth() {
     }
     else {
       $_SESSION['janrain_capture_email'] = $profile['result']['email'];
-
-      $user_info = array(
-        'name' => janrain_capture_profile_field($profile['result']),
-        'mail' => $profile['result']['email'],
-        'status' => 1,
-      );
       $new_user = FALSE;
 
       if (!$account = user_external_load($profile['result']['uuid'])) {
         $account = new stdClass();
+        $account->name = $profile['result']['email'];
+        $account->mail = $profile['result']['email'];
+        $account->status = 1;
       }
 
       if (!isset($account->uid)) {
@@ -96,7 +93,6 @@ function janrain_capture_oauth() {
         }
       }
 
-
       $signin = TRUE;
       if ($account === FALSE) {
         $signin = FALSE;
@@ -136,7 +132,7 @@ function janrain_capture_oauth() {
         user_login_submit(array(), $form_state);
         // Re-sync Capture data to make sure we're up to date.
         janrain_capture_sync_account($account, $profile['result']);
-        $account = user_save($account, $user_info);
+        $account = user_save($account);
         module_invoke_all('janrain_capture_user_authenticated', $profile['result'], $account, $new_user);
       }
     }
@@ -248,44 +244,6 @@ function janrain_capture_profile_sync() {
   else {
     drupal_set_message(t('We were unable to complete your request.'), 'error');
     watchdog('janrain_capture', 'Failed to save Capture data to user', array(), WATCHDOG_ERROR);
-  }
-}
-
-/**
- * Modifies the user account with values from the Janrain Capture profile array.
- *
- * Invokes a hook to allow other modules to modify the account as well.
- *
- * @param $account
- *   The account object to modify with values from the Janrain Capture profile
- * @param array $profile
- *   The Janrain Capture profile array.
- */
-function janrain_capture_sync_account($account, $profile) {
-  $account->name = janrain_capture_profile_field($profile);
-  $account->mail = $profile['email'];
-  module_invoke_all('janrain_capture_profile_sync', $account, $profile);
-}
-
-/**
- * Function to retrive the value of a dot-delimited field name from the
- * returned Capture user profile.
- */
-function janrain_capture_profile_field($profile) {
-  $janrain_capture_fields = variable_get('janrain_capture_fields', array());
-  $name = !empty($janrain_capture_fields['capture_name_field'])
-    ? $janrain_capture_fields['capture_name_field']
-    : 'email';
-  if (strpos($name, '.')) {
-    $names = explode('.', $name);
-    $value = $profile;
-    foreach ($names as $n) {
-      $value = $value[$n];
-    }
-    return $value;
-  }
-  else {
-    return $profile[$name];
   }
 }
 

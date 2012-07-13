@@ -38,8 +38,7 @@ function janrain_capture_oauth() {
       watchdog('janrain_capture', 'Failed to obtain a Capture record', array(), WATCHDOG_ERROR);
     }
     else {
-      // Save profile in session.
-      $_SESSION['janrain_capture_profile'] = $profile;
+      $_SESSION['janrain_capture_email'] = $profile['result']['email'];
 
       $user_info = array(
         'name' => janrain_capture_profile_field($profile['result']),
@@ -109,8 +108,8 @@ function janrain_capture_oauth() {
             && $janrain_capture_fields['capture_enforce_verification']
             && $profile['result']['emailVerified'] == NULL) {
         $signin = FALSE;
-        if (isset($_SESSION['janrain_capture_profile']['result']['email'])) {
-          drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_profile']['result']['email'])), 'status');
+        if (isset($_SESSION['janrain_capture_email'])){
+          drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_email'])), 'status');
         }
         else {
           drupal_set_message(t('A verification link has been sent. Please check your email.'), 'status');
@@ -297,8 +296,8 @@ function janrain_capture_profile_field($profile) {
 function janrain_capture_resend_verification_email() {
   $hook = module_invoke_all('janrain_capture_verification_resent');
   if (empty($hook) || !in_array(FALSE, $hook)) {
-    if (isset($_SESSION['janrain_capture_profile']['result']['email'])) {
-      drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_profile']['result']['email'])), 'status');
+    if (isset($_SESSION['janrain_capture_email'])) {
+      drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_email'])), 'status');
     }
     else {
       drupal_set_message(t('A verification link has been sent. Please check your email.'), 'status');

@@ -85,11 +85,15 @@ function janrain_capture_init() {
     $_SESSION['janrain_capture_password_recover'] = FALSE;
   }
 
-  foreach (array_keys($scripts) as $type) {
-    foreach ($scripts[$type] as $s) {
-      drupal_add_js($s, array('type' => $type, 'every_page' => TRUE, 'weight' => 1));
+    foreach ($scripts['file'] as $s) {
+      drupal_add_js($s, array('type' => 'file', 'every_page' => TRUE, 'weight' => 1));
     }
-  }
+    foreach ($scripts['external'] as $s) {
+      drupal_add_js($s, array('type' => 'external', 'every_page' => TRUE, 'weight' => 1));
+    }
+    foreach ($scripts['inline'] as $s) {
+      drupal_add_js($s, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 1));
+    }
 }
 
 /**

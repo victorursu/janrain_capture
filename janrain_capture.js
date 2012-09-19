@@ -10,15 +10,38 @@ Drupal.janrainCapture = {
   token_expired: function() {
     window.location.href = Drupal.settings.janrainCapture.token_expired_url;
   },
-  bp_ready: function() {
-    if (typeof(Backplane) != 'undefined') {
-      var channelId = encodeURIComponent(Backplane.getChannelID());
-      $("a.janrain_capture_signin").each(function(){
-        $(this).attr("href", $(this).attr("href") + "&bp_channel=" + channelId).click(function(){
-          Backplane.expectMessages("identity/login");
-        });
+  bp_ready: function() {   
+      var ssojs = null;
+      var ssotrue = false;
+  	  var channelId = Backplane.getChannelID();
+	  jQuery('script').each(function() {
+		if(jQuery(this).attr('src')) {
+		  ssojs = jQuery(this).attr('src');
+	      if ( undefined != ssojs && ssojs.search(/sso.js/i) > 0 ) { 
+	    	  ssotrue = true;
+	    	  return false;
+	      }
+		}
       });
-    }
+	  if (ssotrue) { 
+	    // do sso - 
+		console.log('Federated');
+		JANRAIN.SSO.CAPTURE.check_login({
+			  sso_server: "https://" + Drupal.settings.janrainCapture.sso_address,
+			  client_id: janrainCaptureClientId,
+			  redirect_uri: janrainCaptureRedirectUri,
+			  logout_uri: janrainCaptureLogoutUri,
+			  xd_receiver: janrainCaptureXdReceiver,
+			  bp_channel: channelId
+			});
+	  } else {
+	    // do non sso
+      } 
+	  jQuery("a.janrain_capture_signin").each(function(){
+	    jQuery(this).attr("href", $(this).attr("href") + "&bp_channel=" + channelId).click(function(){
+		  Backplane.expectMessages("identity/login");
+		});  
+      });
   },
   logout: function() {
     if (typeof(Drupal.settings.janrainCapture.sso_address) != 'undefined') {

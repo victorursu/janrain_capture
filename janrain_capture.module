@@ -33,17 +33,17 @@ function janrain_capture_init() {
     'janrainCapture' => array(
       'profile_sync_url' => url('janrain_capture/profile_sync', $uri_opts),
       'token_expired_url' => url('janrain_capture/token_expired/' . drupal_get_token('janrain_capture_token_expired')),
-      'logout_url' => url('user/logout', array('absolute' => TRUE)),
+      'logout_url' => url('user/logout', array('absolute' => TRUE, 'real_logout' => TRUE)),
       'enforce' => variable_get('janrain_capture_enforce', FALSE),
     ),
   );
-  if (!empty($capture_sso_address)) {
-    $settings['janrainCapture']['sso_address'] = $capture_sso_address;
-  }
   if (!empty($janrain_capture_optional['backplane_server'])
     && !empty($janrain_capture_optional['backplane_bus_name'])) {
     $settings['janrainCapture']['backplane_server'] = $janrain_capture_optional['backplane_server'];
     $settings['janrainCapture']['backplane_bus_name'] = $janrain_capture_optional['backplane_bus_name'];
+  }
+  if (!empty($capture_sso_address)) {
+    $settings['janrainCapture']['sso_address'] = $capture_sso_address;
   }
   drupal_add_js($settings, array('type' => 'setting', 'every_page' => TRUE));
 
@@ -59,14 +59,24 @@ function janrain_capture_init() {
   $scripts['external'][] = 'https://d7v0k4dt27zlp.cloudfront.net/assets/capture_client.js';
 
   if (!empty($capture_sso_address)) {
+        
     $scripts['external'][] = "https://$capture_sso_address/sso.js";
-    $scripts['inline'][] = 'JANRAIN.SSO.CAPTURE.check_login({
-  sso_server: "https://' . $capture_sso_address . '",
-  client_id: "' . $capture_client_id . '",
-  redirect_uri: "' . url('janrain_capture/oauth', array('absolute' => TRUE)) . '",
-  logout_uri: "' . url('user/logout', array('absolute' => TRUE)) . '",
-  xd_receiver: "' . url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html"
-});';
+    $scripts['inline'][] = '
+    var janrainCaptureClientId ="'. $capture_client_id .'";
+    var janrainCaptureRedirectUri ="'. url('janrain_capture/oauth', array('absolute' => TRUE)).'";
+    var janrainCaptureLogoutUri ="'. url('user/logout', array('absolute' => TRUE, 'real_logout' => TRUE)).'";
+    var janrainCaptureXdReceiver ="'. url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html";
+    
+    if(undefined == "'.$janrain_capture_optional['backplane_bus_name'].'") {
+		console.log("Not Federated");
+		JANRAIN.SSO.CAPTURE.check_login({
+			  sso_server: "https://" + Drupal.settings.janrainCapture.sso_address,
+			  client_id: janrainCaptureClientId,
+			  redirect_uri: janrainCaptureRedirectUri,
+			  logout_uri: janrainCaptureLogoutUri,
+			  xd_receiver: janrainCaptureXdReceiver
+			});
+    }';
   }
 
   if (!empty($janrain_capture_optional['backplane_js_path'])) {
@@ -89,10 +99,10 @@ function janrain_capture_init() {
       drupal_add_js($s, array('type' => 'file', 'every_page' => TRUE, 'weight' => 1));
     }
     foreach ($scripts['external'] as $s) {
-      drupal_add_js($s, array('type' => 'external', 'every_page' => TRUE, 'weight' => 1));
+      drupal_add_js($s, array('type' => 'external', 'every_page' => TRUE, 'weight' => 2));
     }
     foreach ($scripts['inline'] as $s) {
-      drupal_add_js($s, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 1));
+      drupal_add_js($s, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 3));
     }
 }
 
@@ -256,6 +266,24 @@ function janrain_capture_url($options = NULL) {
 }
 
 /**
+ * Implements hook_url_outbound_alter().
+ */
+function janrain_capture_url_outbound_alter(&$path, &$options, $original_path) {
+  // Override lougout link
+  //var_dump($path);
+  switch ($path) {
+    case 'user/logout':
+      $janrain_capture_optional = variable_get('janrain_capture_optional', array());
+      //var_dump($janrain_capture_optional);
+      if($janrain_capture_optional['capture_sso_address'] && !isset($options['real_logout'])) {
+        $path = 'javascript:CAPTURE.logout()';
+        $options['external'] =TRUE;
+      }
+      break;
+  }
+}
+
+/**
  * Implements hook_menu_alter().
  */
 function janrain_capture_menu_alter(&$items) {
@@ -268,6 +296,7 @@ function janrain_capture_menu_alter(&$items) {
       // Override to be callbacks instead of tabs.
       $items[$key]['type'] = MENU_CALLBACK;
     }
+      
     // Let logged in users use the shortcut to their profile.
     $items['user']['access callback'] = 'user_is_logged_in';
     // All password reset requests should go via Capture.

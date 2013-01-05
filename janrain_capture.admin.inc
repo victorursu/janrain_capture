@@ -12,7 +12,19 @@ function janrain_capture_settings() {
   $form['description'] = array(
     '#markup' => '<p>' . t('Connection to Janrain Capture requires a subscription. Once subscribed, use the values on the Janrain dashboard to complete the fields below to connect the service.') . '</p>',
   );
-
+  $janrain_capture_ver = variable_get('janrain_capture_ver', array());
+  $ver = !empty($janrain_capture_ver) ? $janrain_capture_ver : '1.0';
+  
+  $form['janrain_capture_ver'] = array(
+    '#type' => 'select',
+    '#title' => t('Capture Version'),
+    '#options' => array(
+      '2.0' => t('Capture'),
+      '1.0' => t('Capture Legacy'),
+    ),
+    '#default_value' => !empty($janrain_capture_ver) ? $janrain_capture_ver : '1.0',
+    '#description' => t('Which version of Capture are you using? Chose and save before configuring. Settings below will change accordingly and are stored separately.'),
+  );
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $form['janrain_capture_main'] = array(
     '#type' => 'fieldset',
@@ -119,7 +131,7 @@ function janrain_capture_settings() {
     '#type' => 'checkbox',
     '#title' => t('Enforce the use of Janrain Capture.'),
     '#default_value' => variable_get('janrain_capture_enforce', 0),
-    '#description' => t('Make it impossible to login to this site outside of Janrain Capture. WARNING: DO NOT enable this setting until all of your user accounts have been migrated to Janrain Capture.'),
+    '#description' => t('Make it impossible to login to this site outside of Janrain Capture. <br/>WARNING: DO NOT enable this setting until you have made at least one Capture user a Drupal Administrator and all of your user accounts have been migrated to Janrain Capture.'),
   );
   $form['#validate'] = array(
     'janrain_capture_settings_validate',

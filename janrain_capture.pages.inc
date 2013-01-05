@@ -13,10 +13,20 @@ function janrain_capture_oauth() {
   global $user;
   $token = isset($_REQUEST['code']) ? $_REQUEST['code'] : '';
   $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : '';
-  $janrain_capture_fields = variable_get('janrain_capture_fields', array());
-  $janrain_capture_main = variable_get('janrain_capture_main', array());
-  $janrain_capture_optional = variable_get('janrain_capture_optional', array());
-
+  $ver = variable_get('janrain_capture_ver', array());
+  
+  if ($ver == '1.0') {
+    $janrain_capture_fields   = variable_get('janrain_capture_fields', array());
+    $janrain_capture_main     = variable_get('janrain_capture_main', array());
+    $janrain_capture_optional = variable_get('janrain_capture_optional', array());
+  } else {
+    $janrain_capture_fields   = variable_get('janrain_capture_fields2', array());
+    $janrain_capture_main     = variable_get('janrain_capture_main2', array());
+    $janrain_capture_main     = array_merge($janrain_capture_main, variable_get('janrain_capture_ui2', array()));
+    $janrain_capture_optional = variable_get('janrain_capture_federate2', array());
+    $janrain_capture_optional = array_merge($janrain_capture_optional, variable_get('janrain_capture_backplane2', array()));
+  }
+  
   if ($token) {
     // Cannot use the Drupal url query option because drupal_http_build_query
     // decodes slashes causing incompatibility.
@@ -277,4 +287,22 @@ function janrain_capture_token_expired() {
 
   drupal_set_message(t('Your session has expired. Please sign in again.'), 'error');
   drupal_goto();
+}
+
+/**
+ * Callback the janrain_capture/public_profile menu item.
+ */
+function janrain_capture_public_profile() {
+  global $base_url;
+  $janrain_settings =  variable_get('janrain_capture_ui2', array());
+  $ifolder = $janrain_settings['screens_folder'];;
+  // if path is local, convert to local path
+  if(strpos($ifolder, $base_url) === 0) {
+    $ifolder = str_ireplace($base_url, '', $ifolder);
+    $loc_url = str_ireplace('http://'.$_SERVER['SERVER_NAME'], '', $base_url );
+    $loc_url = str_ireplace('https://'.$_SERVER['SERVER_NAME'], '', $loc_url );
+    $ifolder = getenv("DOCUMENT_ROOT") . $loc_url . $ifolder;
+  }
+  $url = $ifolder.'public-profile.php';
+  include_once $url;
 }

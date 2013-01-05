@@ -4,3 +4,4 @@ package = Janrain Capture
 core = 7.x
 configure = admin/config/people/janrain_capture
 files[] = janrain_capture.api.inc
+

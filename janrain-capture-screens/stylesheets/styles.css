@@ -1,4 +1,4 @@
-#janrainModal, #janrainModalOverlay {
+#janrainModal, #janrainModalOverlay, #janrain-share {
   z-index: 99999 !important
 }
 #janrainModal .janrain_modal_closebutton {

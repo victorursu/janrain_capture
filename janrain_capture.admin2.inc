@@ -91,8 +91,8 @@ function janrain_capture_settings() {
   $form['janrain_capture_ui2']['screens_folder'] = array(
     '#type' => 'textfield',
     '#title' => t('Screens Folder'),
-    '#default_value' => !empty($janrain_capture_ui['screens_folder']) ? $janrain_capture_ui['screens_folder'] : $base_url.'/sites/all/themes/janrain-capture-screens/',
-    '#description' => t('The absolute url of the Capture screens folder<br/>(example: '.$base_url.'/sites/all/themes/janrain-capture-screens/)'),
+    '#default_value' => !empty($janrain_capture_ui['screens_folder']) ? $janrain_capture_ui['screens_folder'] : 'file:///sites/all/themes/janrain-capture-screens/',
+    '#description' => t('URL of the Capture screens folder<br/>(examples: file:///sites/all/themes/janrain-capture-screens/, http://example.com/capture-screens/)'),
   );
   $form['janrain_capture_ui2']['recaptcha_key'] = array(
     '#type' => 'textfield',
@@ -151,6 +151,12 @@ function janrain_capture_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
+  $form['janrain_capture_fields2']['capture_no_email'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Don\'t store user email addresses in the Drupal database'),
+    '#default_value' => isset($janrain_capture_fields['capture_no_email']) ? $janrain_capture_fields['capture_no_email'] : 0,
+    '#description' => t('No real email addresses will be stored in the Drupal database; a placeholder value (UUID@localhost) will be stored instead. Note: you can also avoid storing email addresses as user names by enabling the Janrain Capture Mapping module and mapping a field (e.g. UUID) to Drupal user name'),
+  );
   $form['janrain_capture_fields2']['capture_enforce_verification'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require email verification'),
@@ -165,6 +171,7 @@ function janrain_capture_settings() {
     '#states' => array(
       'enabled' => array(
         ':input[name="janrain_capture_fields2[capture_enforce_verification]"]' => array('checked' => TRUE),
+        ':input[name="janrain_capture_fields2[capture_no_email]"]' => array('checked' => FALSE),
       )
     ),
   );
@@ -185,8 +192,113 @@ function janrain_capture_settings() {
       'original' => t('Original')
     ),
     '#default_value' => isset($janrain_capture_fields['capture_preferred_photo_variant']) ? $janrain_capture_fields['capture_preferred_photo_variant'] : 'small',
-    '#description' => t('Select the photo variant to use from the Capture profile.'),
+    '#description' => t('Select the preferred photo variant to use from the Capture profile. When it\'s not available, the "other" variant will be used as fallback.'),
   );
+
+  $group = 'janrain_capture_share';
+  $conf = variable_get($group, array());
+  $form[$group] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Social Share Settings (optional)'),
+    '#group' => 'settings',
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('To configure social sharing providers visit <a href="@social_link" target="_blank">Janrain\'s rpxnow site</a>.', array('@social_link' => 'https://rpxnow.com')),
+  );
+  $form[$group]['enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable social share.'),
+    '#default_value' => isset($conf['enabled']) ? $conf['enabled'] : 0,
+    '#description' => t('Enable social sharing for the site. Don\'t forget to edit the social sharing settings for individual <a href="!content_types_link" target="_blank">content types</a>.', array('!content_types_link' => url('admin/structure/types/'))),
+  );
+  $sgroup = 'nodes';
+  $sconf = isset($conf[$sgroup]) ? $conf[$sgroup] : array();
+  $form[$group][$sgroup] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Social sharing settings for content'),
+  );
+  $form[$group][$sgroup]['default_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default message for shared content'),
+    '#default_value' => isset($sconf['default_message']) ? $sconf['default_message'] : JANRAIN_CAPTURE_SHARE_MESSAGE_NODES,
+    '#description' => t('Specify the default message text (including tokens) to be used when sharing content. This setting can be overridden on the content type edit page.')
+  );
+  $form[$group][$sgroup]['default_linktext'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default link text for shared content'),
+    '#default_value' => isset($sconf['default_linktext']) ? $sconf['default_linktext'] : JANRAIN_CAPTURE_SHARE_LINKTEXT_NODES,
+    '#description' => t('Specify the default action description (including tokens) to be used when sharing content.  This setting can be overridden on the content type edit page.')
+  );
+  $form[$group][$sgroup]['default_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default title for shared content'),
+    '#default_value' => isset($sconf['default_title']) ? $sconf['default_title'] : JANRAIN_CAPTURE_SHARE_TITLE_NODES,
+    '#description' => t('Specify the default title (including tokens) to be used when sharing content. This setting can be overridden on the content type edit page.')
+  );
+  $form[$group][$sgroup]['default_summary'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default description for shared content'),
+    '#default_value' => isset($sconf['default_summary']) ? $sconf['default_summary'] : JANRAIN_CAPTURE_SHARE_SUMMARY_NODES,
+    '#description' => t('Specify the default description (including tokens) to be used when sharing content. This setting can be overridden on the content type edit page.')
+  );
+  $form[$group][$sgroup]['providers'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Comma-separated list of providers'),
+    '#default_value' => isset($sconf['providers']) ? implode(', ', $sconf['providers']) : '',
+    '#description' => t('Specify a comma-separated list of providers whose icons should be displayed on the share button. For example: facebook, twitter, yahoo, linkedin.')
+  );
+  $sgroup = 'comments';
+  $sconf = isset($conf[$sgroup]) ? $conf[$sgroup] : array();
+  $form[$group][$sgroup] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Social sharing settings for comments'),
+  );
+  $form[$group][$sgroup]['default_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default message for shared comments'),
+    '#default_value' => isset($sconf['default_message']) ? $sconf['default_message'] : JANRAIN_CAPTURE_SHARE_MESSAGE_COMMENTS,
+    '#description' => t('Specify the default message text (including tokens) to be used when sharing comments. This setting can be overridden on the content type edit page.')
+  );
+  $form[$group][$sgroup]['default_linktext'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default link text for shared comments'),
+    '#default_value' => isset($sconf['default_linktext']) ? $sconf['default_linktext'] : JANRAIN_CAPTURE_SHARE_LINKTEXT_COMMENTS,
+    '#description' => t('Specify the default action description (including tokens) to be used when sharing comments.  This setting can be overridden on the content type edit page.')
+  );
+  $form[$group][$sgroup]['default_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default title for shared comments'),
+    '#default_value' => isset($sconf['default_title']) ? $sconf['default_title'] : JANRAIN_CAPTURE_SHARE_TITLE_COMMENTS,
+    '#description' => t('Specify the default title (including tokens) to be used when sharing comments. This setting can be overridden on the content type edit page.')
+  );
+  $form[$group][$sgroup]['default_summary'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default description for shared comments'),
+    '#default_value' => isset($sconf['default_summary']) ? $sconf['default_summary'] : JANRAIN_CAPTURE_SHARE_SUMMARY_COMMENTS,
+    '#description' => t('Specify the default description (including tokens) to be used when sharing comments. This setting can be overridden on the content type edit page.')
+  );
+
+  // Add the token tree UI.
+  if (module_exists('token')) {
+    $form[$group]['token_help'] = array(
+      '#theme' => 'token_tree',
+      '#token_types' => array('user', 'node', 'comment', 'site'),
+      '#global_types' => FALSE,
+    );
+  }
+  else {
+    $form[$group]['token_help'] = array(
+      '#markup' => t('<a href="@token_module_link" target="_blank">Token</a> module is not enabled. Enable it if you want to use the token browser here.', array('@token_module_link' => 'http://drupal.org/project/token')),
+    );
+  }
+
   $form['janrain_capture_enforce'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enforce the use of Janrain Capture.'),
@@ -197,7 +309,7 @@ function janrain_capture_settings() {
     'janrain_capture_settings_validate2',
   );
   $form['#submit'] = array(
-    'janrain_capture_settings_submit',
+    'janrain_capture_settings_submit2',
   );
   
   return system_settings_form($form);
@@ -210,12 +322,43 @@ function janrain_capture_settings_validate2($form, &$form_state) {
   if ($form_state['values']['janrain_capture_fields2']['capture_match_email'] && !$form_state['values']['janrain_capture_fields2']['capture_enforce_verification']) {
     form_set_error('janrain_capture_fields2][capture_match_email', t('You must enable the Enforce Email Verification setting in order to enable the Match Users on Email setting.'));
   }
+
+  // Do not allow to enable social share if no engage URL is provided.
+  if ($form_state['values']['janrain_capture_share']['enabled'] && empty($form_state['values']['janrain_capture_main2']['engage_address'])) {
+    form_set_error('janrain_capture_main2][engage_address', t('You must provide an Engage URL in order to enable social share.'));
+  }
+
+  $v = strtolower($form_state['values']['janrain_capture_ui2']['screens_folder']);
+  if ($v
+      && strpos($v, 'file:///', 0) !== 0
+      && strpos($v, 'http://', 0) !== 0
+      && strpos($v, 'https://', 0) !== 0) {
+
+    form_set_error('janrain_capture_ui2][screens_folder', t('Capture screens folder URL: unknown scheme. Examples of valid URLs: file:///sites/all/themes/janrain-capture-screens/, http://example.com/capture-screens/)'));
+  }
 }
 
 /**
  * Submit callback for the settings form.
  */
-function janrain_capture_settings_submit($form, &$form_state) {
+function janrain_capture_settings_submit2($form, &$form_state) {
+  // Store the comma-separated list of share providers as an array.
+  if(!empty($form_state['values']['janrain_capture_share']['nodes']['providers'])) {
+    $providers = $form_state['values']['janrain_capture_share']['nodes']['providers'];
+    $providers = str_replace(' ', '', $providers);
+    $providers = explode(',', $providers);
+  } else {
+    $providers = array();
+  }
+  $form_state['values']['janrain_capture_share']['nodes']['providers'] = $providers;
+
   // Rebuild the menu in case the "enforce" setting changed.
   variable_set('menu_rebuild_needed', TRUE);
+
+  // Make sure there's a trailing slash in the capture screens folder URL.
+  $v = strtolower($form_state['values']['janrain_capture_ui2']['screens_folder']);
+  if ($v) {
+    $v = rtrim($v, '/') . '/';
+  }
+  $form_state['values']['janrain_capture_ui2']['screens_folder'] = $v;
 }

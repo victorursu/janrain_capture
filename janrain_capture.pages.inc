@@ -11,10 +11,17 @@
  */
 function janrain_capture_oauth() {
   global $user;
-  $token = isset($_REQUEST['code']) ? $_REQUEST['code'] : '';
-  $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : '';
+  $token = isset($_REQUEST['code']) ? $_REQUEST['code'] : false;
+  // I'm not sure about this origin parameter. It doesn't seem to be used by
+  // Drupal or its modules. I think what was meant is 'destination', but let's
+  // leave it here for backwards compatibility, in case some site relies on it.
+  $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : false;
+  if (!$origin) {
+    $destination = isset($_REQUEST['destination']) ? $_REQUEST['destination'] : false;
+  }
+  $url_type = isset($_REQUEST['url_type']) ? $_REQUEST['url_type'] : false;
   $ver = variable_get('janrain_capture_ver', array());
-  
+
   if ($ver == '1.0') {
     $janrain_capture_fields   = variable_get('janrain_capture_fields', array());
     $janrain_capture_main     = variable_get('janrain_capture_main', array());
@@ -25,14 +32,44 @@ function janrain_capture_oauth() {
     $janrain_capture_main     = array_merge($janrain_capture_main, variable_get('janrain_capture_ui2', array()));
     $janrain_capture_optional = variable_get('janrain_capture_federate2', array());
     $janrain_capture_optional = array_merge($janrain_capture_optional, variable_get('janrain_capture_backplane2', array()));
+
+    if (isset($_REQUEST['verification_code'])) { $url_type='verify'; }
+    // do we need to output like verify or forgot
+    if ($url_type) {
+      $widget_js = widget_js();
+      $screen = _janrain_capture_get_screen("{$url_type}.html");
+      $js = _janrain_capture_get_screen("{$url_type}.js");
+
+      $output = <<<AUTH
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+  <head>
+    <script type="text/javascript">
+{$js}
+{$widget_js}
+    </script>
+  </head>
+  <body>
+{$screen}
+  </body>
+</html>
+AUTH;
+
+      print $output;
+      return NULL;
+    }
   }
-  
+
   if ($token) {
     // Cannot use the Drupal url query option because drupal_http_build_query
     // decodes slashes causing incompatibility.
     $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));
     if ($origin) {
       $redirect_uri .= (strpos($redirect_uri, '?') !== FALSE ? '&' : '?') . 'origin=' . urlencode($origin);
+    }
+    else if ($destination) {
+      $redirect_uri .= '?destination=' . str_replace('%2F', '/', rawurlencode($destination));
     }
     $api = new JanrainCaptureApi();
 
@@ -48,21 +85,31 @@ function janrain_capture_oauth() {
       watchdog('janrain_capture', 'Failed to obtain a Capture record', array(), WATCHDOG_ERROR);
     }
     else {
-      $_SESSION['janrain_capture_email'] = $profile['result']['email'];
+      // Do we store users' emails in the Drupal database?
+      $store_email = !isset($janrain_capture_fields['capture_no_email']) || !$janrain_capture_fields['capture_no_email'];
+      if ($store_email) {
+        $_SESSION['janrain_capture_email'] = $profile['result']['email'];
+      }
       $new_user = FALSE;
 
       if (!$account = user_external_load($profile['result']['uuid'])) {
         $account = new stdClass();
         $account->name = $profile['result']['email'];
-        $account->mail = $profile['result']['email'];
+        $account->mail = $store_email ?
+          $profile['result']['email'] :
+          $profile['result']['uuid'] . '@localhost';
         $account->status = 1;
       }
 
       if (!isset($account->uid)) {
-        // No user was found with our Capture uuid. Look for a local user with
-        // // the same email address.
-        $local_user = reset(user_load_multiple(array(), array('mail' => $profile['result']['email'])));
-        if ($local_user) {
+        // No user was found with our Capture uuid. If we store email addresses in the
+        // Drupal database, we can also try matching based on email.
+        if ($store_email) {
+          // Look for a local user with the same email address.
+          $loaded_user = user_load_multiple(array(), array('mail' => $profile['result']['email']));
+          $local_user = reset($loaded_user);
+        }
+        if ($store_email && $local_user) {
           // Are we configured to match users based on email?
           if (isset($janrain_capture_fields['capture_match_email']) && $janrain_capture_fields['capture_match_email']) {
             // Check to see if this user is already mapped to a Capture uuid.
@@ -86,7 +133,7 @@ function janrain_capture_oauth() {
             }
           }
         }
-        // No local users with matching email. Create a new one.
+        // No local users found. Create a new one.
         else {
           $user_info['pass'] = user_password();
           $account = user_save($account, $user_info);
@@ -164,7 +211,7 @@ function janrain_capture_oauth() {
     <p>Please wait...</p>
     <script type="text/javascript">
       var redirect_url = null;
-      var regex = /\#destination\=([^\&]*)/;
+      var regex = /[\#\?]destination\=([^\&]*)/;
       var match = regex.exec(window.parent.location.href);
       if (match && match.length == 2) {
         redirect_url = "{$signin_redirect}/?destination=" + decodeURIComponent(match[1]);
@@ -287,22 +334,4 @@ function janrain_capture_token_expired() {
 
   drupal_set_message(t('Your session has expired. Please sign in again.'), 'error');
   drupal_goto();
-}
-
-/**
- * Callback the janrain_capture/public_profile menu item.
- */
-function janrain_capture_public_profile() {
-  global $base_url;
-  $janrain_settings =  variable_get('janrain_capture_ui2', array());
-  $ifolder = $janrain_settings['screens_folder'];;
-  // if path is local, convert to local path
-  if(strpos($ifolder, $base_url) === 0) {
-    $ifolder = str_ireplace($base_url, '', $ifolder);
-    $loc_url = str_ireplace('http://'.$_SERVER['SERVER_NAME'], '', $base_url );
-    $loc_url = str_ireplace('https://'.$_SERVER['SERVER_NAME'], '', $loc_url );
-    $ifolder = getenv("DOCUMENT_ROOT") . $loc_url . $ifolder;
-  }
-  $url = $ifolder.'public-profile.php';
-  include_once $url;
 }

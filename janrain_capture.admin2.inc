@@ -10,11 +10,6 @@
  */
 function janrain_capture_settings() {
   global $base_url;
-  $form['description'] = array(
-    '#markup' => '<p>' . t('Connection to Janrain Capture requires a subscription. Once subscribed, use the values on the Janrain dashboard to complete the fields below to connect the service.') . '</p>',
-  );
-  $janrain_capture_ver = variable_get('janrain_capture_ver', array());
-  $ver = !empty($janrain_capture_ver) ? $janrain_capture_ver : 'empty';
   
   $janrain_capture_main = variable_get('janrain_capture_main2', array());
   $form['janrain_capture_main2'] = array(
@@ -71,12 +66,6 @@ function janrain_capture_settings() {
     '#title' => t('Registration Flow'),
     '#default_value' => !empty($janrain_capture_ui['registration_flow']) ? $janrain_capture_ui['registration_flow'] : 'socialRegistration',
     '#description' => t('Change this only when instructed to do so<br/>(default: socialRegistration)'),
-  );
-  $form['janrain_capture_ui2']['screens_folder'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Screens Folder'),
-    '#default_value' => !empty($janrain_capture_ui['screens_folder']) ? $janrain_capture_ui['screens_folder'] : 'file:///sites/all/themes/janrain-capture-screens/',
-    '#description' => t('URL of the Capture screens folder<br/>(examples: file:///sites/all/themes/janrain-capture-screens/, http://example.com/capture-screens/)'),
   );
   $form['janrain_capture_ui2']['recaptcha_key'] = array(
     '#type' => 'textfield',
@@ -324,15 +313,6 @@ function janrain_capture_settings_validate2($form, &$form_state) {
   if ($form_state['values']['janrain_capture_share']['enabled'] && empty($form_state['values']['janrain_capture_main2']['engage_address'])) {
     form_set_error('janrain_capture_main2][engage_address', t('You must provide an Engage URL in order to enable social share.'));
   }
-
-  $v = strtolower($form_state['values']['janrain_capture_ui2']['screens_folder']);
-  if ($v
-      && strpos($v, 'file:///', 0) !== 0
-      && strpos($v, 'http://', 0) !== 0
-      && strpos($v, 'https://', 0) !== 0) {
-
-    form_set_error('janrain_capture_ui2][screens_folder', t('Capture screens folder URL: unknown scheme. Examples of valid URLs: file:///sites/all/themes/janrain-capture-screens/, http://example.com/capture-screens/)'));
-  }
 }
 
 /**
@@ -359,11 +339,4 @@ function janrain_capture_settings_submit2($form, &$form_state) {
 
   // Rebuild the menu in case the "enforce" setting changed.
   variable_set('menu_rebuild_needed', TRUE);
-
-  // Make sure there's a trailing slash in the capture screens folder URL.
-  $v = strtolower($form_state['values']['janrain_capture_ui2']['screens_folder']);
-  if ($v) {
-    $v = rtrim($v, '/') . '/';
-  }
-  $form_state['values']['janrain_capture_ui2']['screens_folder'] = $v;
 }

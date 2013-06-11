@@ -494,7 +494,7 @@ function janrain_capture_url_outbound_alter(&$path, &$options, $original_path) {
   // Override logout link
   switch ($path) {
     case 'user/logout':
-      $ver = variable_get('janrain_capture_ver', array());
+      $ver = variable_get('janrain_capture_ver', '1.0');
 
       if ($ver == '1.0') {
         $conf = variable_get('janrain_capture_optional', array());
@@ -1425,4 +1425,23 @@ function _janrain_capture_get_screen($fname) {
 
     return $result;
   }
+}
+
+/*
+ * Determines the default load.js URL
+ */
+function _janrain_capture_default_loadjs_url() {
+  // Parse engage app name to load.js path. If engage address is given engage app name will be parsed else default will be parsed.
+
+  $janrain_capture_main = variable_get('janrain_capture_main2', array());
+  $engageAppUrl = $janrain_capture_main['engage_address'];
+
+  if ($engageAppUrl != ''){
+    $engageAppName = strstr(parse_url($engageAppUrl, PHP_URL_HOST), '.', true);   
+  }
+  else {
+    $engageAppName = 'default';
+  }
+
+  return 'd16s8pqtk4uodx.cloudfront.net/' . $engageAppName . '/load.js';
 }

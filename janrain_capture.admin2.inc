@@ -138,7 +138,7 @@ function janrain_capture_settings() {
     '#type' => 'radios',
     '#title' => t('Backplane Version'),
     '#options' => $options,
-    '#default_value' => $options['2'],
+    '#default_value' => isset($janrain_capture_backplane['backplane_version']) ? $janrain_capture_backplane['backplane_version'] : $options['2'],
   );
 
   $form['janrain_capture_backplane2']['backplane_bus_name'] = array(

@@ -34,8 +34,6 @@ Drupal.janrainCapture = {
 			  xd_receiver: janrainCaptureXdReceiver,
 			  bp_channel: channelId
 			});
-	  } else {
-	    // do non sso
       } 
 	  jQuery("a.janrain_capture_signin").each(function(){
 	    jQuery(this).attr("href", $(this).attr("href") + "&bp_channel=" + channelId).click(function(){
@@ -49,6 +47,9 @@ Drupal.janrainCapture = {
         sso_server: "https://" + Drupal.settings.janrainCapture.sso_address,
         logout_uri: Drupal.settings.janrainCapture.logout_url
       });
+    }
+    if (typeof(Backplane) != 'undefined') {
+        Backplane.resetCookieChannel();
     }
   },
   addDestination: function(destination) {
@@ -97,6 +98,14 @@ Drupal.behaviors.janrainCapture = {
             }
           }
         }
+        if (typeof(settings.janrainCapture.backplane_server) != 'undefined'
+            && typeof(settings.janrainCapture.backplane_bus_name) != 'undefined') {
+          Backplane(Drupal.janrainCapture.bp_ready);
+          Backplane.init({
+            serverBaseURL: settings.janrainCapture.backplane_server,
+            busName: settings.janrainCapture.backplane_bus_name
+          });
+        }
       }
       else {
         // Add all capture_modal_open links to the list.
@@ -125,14 +134,6 @@ Drupal.behaviors.janrainCapture = {
           }
         }
       }
-    }
-    if (typeof(settings.janrainCapture.backplane_server) != 'undefined'
-      && typeof(settings.janrainCapture.backplane_bus_name) != 'undefined') {
-      Backplane(Drupal.janrainCapture.bp_ready);
-      Backplane.init({
-        serverBaseURL: settings.janrainCapture.backplane_server,
-        busName: settings.janrainCapture.backplane_bus_name
-      });
     }
     window.CAPTURE = Drupal.janrainCapture;
   }

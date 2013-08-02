@@ -6,11 +6,14 @@ function janrainCaptureWidgetOnLoad() {
     }
     janrain.events.onCaptureSessionFound.addHandler(function(result){
 	    //console.log ("capture session found");
-	    janrainSignOut();
     });
 
     janrain.events.onCaptureSessionNotFound.addHandler(function(result){
 	    //console.log ("capture session not found");
+		if (typeof(Backplane) != 'undefined' && typeof(Backplane.getChannelID()) == 'undefined') {
+	    	//console.log ("reset backplane channel");
+        	Backplane.resetCookieChannel();
+    	}
     });
 
     janrain.events.onCaptureLoginSuccess.addHandler(handleCaptureLogin);

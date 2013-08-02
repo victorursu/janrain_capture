@@ -54,25 +54,11 @@ function janrain_capture_page_build(&$page) {
     return;
   }
 
-  if (user_is_anonymous()) {
-    // Inject the signin capture screen.
-    $markup = _janrain_capture_get_screen("signin.html");
-    if ($js = _janrain_capture_get_screen("signin.js")) {
-      // JS for the signin screen that should go into <head> before the widget.
-      drupal_add_js($js, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 2));
-    }
-  } else {
-    // Include a stub 'returnSocial' div for Capture so that
-    // janrain.capture.ui.start() doesn't barf (we need to run it because it
-    // will init Backplane/SSO for us.
-    $markup = '<div style="display:none;" id="returnSocial"></div>';
-    $js = <<<EOD
-function janrainCaptureWidgetOnLoad() {
-  janrain.settings.capture.flowName = 'plugins';
-  janrain.capture.ui.start();
-}
-EOD;
-    drupal_add_js($js, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 2));
+  // Inject the signin capture screen.
+  $markup = _janrain_capture_get_screen("signin.html");
+  if ($js = _janrain_capture_get_screen("signin.js")) {
+    // JS for the signin screen that should go into <head> before the widget.
+    drupal_add_js($js, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 2, 'preprocess' => FALSE));
   }
 
   $page['page_bottom']['janrainCaptureSigninScreen'] = array(
@@ -128,7 +114,7 @@ function janrain_capture_ini($ver = '1.0') {
   if (!empty($capture_sso_address)) {
     $settings['janrainCapture']['sso_address'] = $capture_sso_address;
   }
-  drupal_add_js($settings, array('type' => 'setting', 'every_page' => TRUE));
+  drupal_add_js($settings, array('type' => 'setting', 'every_page' => TRUE, 'preprocess' => FALSE));
   
   $capture_client_id = !empty($janrain_capture_main['capture_client_id'])
     ? $janrain_capture_main['capture_client_id'] : '';
@@ -186,13 +172,13 @@ function janrain_capture_ini($ver = '1.0') {
   }
   
   foreach ($scripts['file'] as $s) {
-    drupal_add_js($s, array('type' => 'file', 'every_page' => TRUE, 'weight' => 1));
+    drupal_add_js($s, array('type' => 'file', 'every_page' => TRUE, 'weight' => 1, 'preprocess' => FALSE));
   }
   foreach ($scripts['external'] as $s) {
-    drupal_add_js($s, array('type' => 'external', 'every_page' => TRUE, 'weight' => 2));
+    drupal_add_js($s, array('type' => 'external', 'every_page' => TRUE, 'weight' => 2, 'preprocess' => FALSE));
   }
   foreach ($scripts['inline'] as $s) {
-    drupal_add_js($s, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 3));
+    drupal_add_js($s, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 3, 'preprocess' => FALSE));
   }
 }
 
@@ -499,8 +485,8 @@ function janrain_capture_url_outbound_alter(&$path, &$options, $original_path) {
       if ($ver == '1.0') {
         $conf = variable_get('janrain_capture_optional', array());
 
-        if($conf['capture_sso_address']
-         && !(isset($conf['capture_sso_enabled']) && !$conf['capture_sso_enabled'])
+        if( (!isset($conf['capture_sso_address']) || trim($conf['capture_sso_address'] == ''))
+         && (!isset($conf['capture_sso_enabled']) || !$conf['capture_sso_enabled'])
          && !isset($options['real_logout'])) {
           $path = 'javascript:CAPTURE.logout()';
           $options['external'] =TRUE;
@@ -805,7 +791,7 @@ function janrain_capture_widget_js() {
     }
   }
   else {
-    $folder_url = variable_get('janrain_capture_screens_folder', array());
+    $folder_url = variable_get('janrain_capture_screens_folder', 'file:///sites/all/themes/janrain-capture-screens/');
 
     // If path is local, search for user agent-specific stylesheets in the file system.
     if(strpos($folder_url, 'file:///', 0) === 0) {
@@ -1064,7 +1050,7 @@ function janrainCaptureSetShare(url, title, desc, msg, provider) {
 }";
 
   $output.= '<!-- End Janrain Engage Social Sharing -->';
-  drupal_add_js($output, array('type' => 'inline', 'scope' => 'header'));
+  drupal_add_js($output, array('type' => 'inline', 'scope' => 'header', 'preprocess' => FALSE ));
 
   $added = TRUE;
 }
@@ -1227,7 +1213,7 @@ function janrain_capture_comment_view_alter(&$build) {
     // FIXME: this is prone to race conditions; should fire when the widget
     // finishes loading instead.
     $output = "setTimeout(function(){janrainCaptureSetShare('$url','{$args['message']}','{$args['title']}','$summary','facebook')},600);";
-    drupal_add_js($output, array('type' => 'inline', 'scope' => 'footer'));
+    drupal_add_js($output, array('type' => 'inline', 'scope' => 'footer', 'preprocess' => FALSE ));
     unset($_SESSION['janrain_capture_comment_social_cid']);
   }
 }
@@ -1386,7 +1372,7 @@ function _janrain_capture_get_screen($fname) {
     return '';
   }
   else {
-    $url = variable_get('janrain_capture_screens_folder', array());
+    $url = variable_get('janrain_capture_screens_folder', 'file:///sites/all/themes/janrain-capture-screens/');
     if (!isset($url)) {
       watchdog('janrain_capture', 'No Capture screens folder specified in the Janrain Capture settings.',  array(), WATCHDOG_WARNING);
       return '';
@@ -1403,7 +1389,7 @@ function _janrain_capture_get_screen($fname) {
       $url_type = isset( $_REQUEST['url_type'] ) ? $_REQUEST['url_type'] : false;
 
       // allow only alpha-numeric (and dashes) to prevent hijacking
-      if ( ! ctype_alnum( str_replace( '-', '', $url_type ) ) ) {
+      if ( $url_type && ! ctype_alnum( str_replace( '-', '', $url_type ) ) ) {
         header( 'HTTP/1.1 400 Bad Request' );
         exit();
       }
@@ -1437,7 +1423,7 @@ function _janrain_capture_default_loadjs_url() {
   $engageAppUrl = $janrain_capture_main['engage_address'];
 
   if ($engageAppUrl != ''){
-    $engageAppName = strstr(parse_url($engageAppUrl, PHP_URL_HOST), '.', true);   
+    $engageAppName = strstr(parse_url($engageAppUrl, PHP_URL_HOST), '.', true);
   }
   else {
     $engageAppName = 'default';

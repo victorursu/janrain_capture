@@ -1,20 +1,39 @@
 function janrainCaptureWidgetOnLoad() {
-    function handleCaptureLogin(result) {
+  var $logout_link = jQuery('a[href="/user/logout"]');
+  $logout_link.addClass('capture_end_session');
 
-        //console.log ("exchanging code for token...");
-        getTokenForCode(result.authorizationCode, janrain.settings.capture.redirectUri);
-    }
-    janrain.events.onCaptureSessionFound.addHandler(function(result){
-	    //console.log ("capture session found");
-	    janrainSignOut();
+  function handleCaptureLogin(result) {
+    console.log ("exchanging code for token...");
+
+    jQuery.ajax({
+      url: Drupal.settings.basePath + 'janrain_capture/oauth?code=' + result.authorizationCode,
+      success: function(token) {
+        console.log('code for token exchange completed');
+        window.location.href = token;
+      },
+      async: false
     });
+  }
+  janrain.events.onCaptureSessionFound.addHandler(function(result){
+    //console.log ("capture session found");
+  });
 
-    janrain.events.onCaptureSessionNotFound.addHandler(function(result){
-	    //console.log ("capture session not found");
-    });
+  janrain.events.onCaptureSessionNotFound.addHandler(function(result){
+    capture_session_found = false;
+    //console.log ("capture session not found");
 
-    janrain.events.onCaptureLoginSuccess.addHandler(handleCaptureLogin);
-    janrain.events.onCaptureRegistrationSuccess.addHandler(handleCaptureLogin);
+	  if (typeof(Backplane) != 'undefined' && typeof(Backplane.getChannelID()) == 'undefined') {
+      //console.log ("reset backplane channel");
+      Backplane.resetCookieChannel();
+  	}
+  });
 
-    janrain.capture.ui.start();
+  janrain.events.onCaptureLoginSuccess.addHandler(handleCaptureLogin);
+  janrain.events.onCaptureSessionEnded.addHandler(function() {
+    window.location.href = '/user/logout';
+  });
+  janrain.events.onCaptureRegistrationSuccess.addHandler(handleCaptureLogin);
+  
+  //janrain.capture.ui.createCaptureSession(access_token);
+  janrain.capture.ui.start();
 }

@@ -28,7 +28,7 @@ function janrain_capture_ui_init() {
     }
   }
   // Finally, add the custom JavaScript.
-  drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js', array('every_page' => TRUE, 'weight' => 10));
+  drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js', array('every_page' => TRUE, 'weight' => 10, 'preprocess' => FALSE));
 }
 
 /**
@@ -116,7 +116,7 @@ function janrain_capture_ui_user_view($account) {
 
   if ($js = _janrain_capture_get_screen("public-profile.js")) {
     // JS for the profile screen that should go into <head> before the widget.
-    drupal_add_js($js, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 2));
+    drupal_add_js($js, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 2, 'preprocess' => FALSE));
   }
 
   return $account;
@@ -200,7 +200,7 @@ function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
 
           if ($js = _janrain_capture_get_screen("edit-profile.js")) {
             // JS for the edit profile screen that should go into <head> before the widget.
-            drupal_add_js($js, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 2));
+            drupal_add_js($js, array('type' => 'inline', 'every_page' => TRUE, 'weight' => 2, 'preprocess' => FALSE));
           }
 
           return;

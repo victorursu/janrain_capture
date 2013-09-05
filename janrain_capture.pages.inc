@@ -11,7 +11,7 @@
  */
 function janrain_capture_oauth() {
   global $user;
-  $token = isset($_REQUEST['code']) ? $_REQUEST['code'] : false;
+  $code = isset($_REQUEST['code']) ? $_REQUEST['code'] : false;
   // I'm not sure about this origin parameter. It doesn't seem to be used by
   // Drupal or its modules. I think what was meant is 'destination', but let's
   // leave it here for backwards compatibility, in case some site relies on it.
@@ -61,7 +61,7 @@ AUTH;
     }
   }
 
-  if ($token) {
+  if ($code) {
     // Cannot use the Drupal url query option because drupal_http_build_query
     // decodes slashes causing incompatibility.
     $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));
@@ -73,7 +73,7 @@ AUTH;
     }
     $api = new JanrainCaptureApi();
 
-    if ($api->newAccessToken($token, $redirect_uri) == FALSE) {
+    if ($api->newAccessToken($code, $redirect_uri) == FALSE) {
       $profile = NULL;
     }
     else {
@@ -200,10 +200,12 @@ AUTH;
       drupal_set_message(t('No Oauth token found!'), 'error');
     }
   }
-  $front_page = url('<front>', array('absolute' => TRUE));
-  $signin_redirect = url('janrain_capture/signin_redirect', array('absolute' => TRUE));
 
-  $output = <<<OAUTH_END
+  if ($ver == '1.0') {
+    $front_page = url('<front>', array('absolute' => TRUE));
+    $signin_redirect = url('janrain_capture/signin_redirect', array('absolute' => TRUE));
+
+    $output = <<<OAUTH_END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
@@ -234,8 +236,14 @@ AUTH;
 </html>
 OAUTH_END;
 
-  print $output;
-  return NULL;
+    print $output;
+    return NULL;
+  }
+  
+  // Return the front page URL to the ajax function in the signin screen
+  echo url('<front>', array('absolute' => TRUE));
+
+  drupal_exit();
 }
 
 /**

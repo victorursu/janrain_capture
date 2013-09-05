@@ -96,6 +96,12 @@ function janrain_capture_mapping_janrain_capture_profile_sync($account, $profile
       if (isset($mapping['column']) && $mapping['column'] != 'value') {
         $value = array($mapping['column'] => $profile[$capture_fields[$mapping['fid']]]);
       }
+
+      // Date fields must be properly formatted as a timestamp
+      if ($wrapper->{$mapping['field']}->type() == 'date') {
+        $value = $value ?: strtotime($value);
+      }
+      
       $wrapper->{$mapping['field']} = $value;
     }
     catch (EntityMetadataWrapperException $e) {

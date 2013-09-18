@@ -757,7 +757,6 @@ function janrain_capture_widget_js() {
   $settings["capture.responseType"]       = "code";
   $settings["capture.captureServer"]      = $janrain_settings['capture_address'];
   $settings["capture.registerFlow"]       = $janrain_settings['registration_flow'];
-  $settings["capture.recaptchaPublicKey"] = $janrain_settings['recaptcha_key'];
   $settings["capture.loadJsUrl"]          = $janrain_settings['load_js'];
 
   $share_settings = variable_get('janrain_capture_share', array());
@@ -920,13 +919,10 @@ EOD;
 EOD;
   }
 
-  // captcha
-  if($settings["capture.recaptchaPublicKey"] != '') {
-    $output .= <<<EOD
-  janrain.settings.capture.recaptchaPublicKey = '{$settings["capture.recaptchaPublicKey"]}';
+  $output .= <<<EOD
+  janrain.settings.capture.recaptchaPublicKey = '6LeVKb4SAAAAAGv-hg5i6gtiOV4XrLuCDsJOnYoP';
 
 EOD;
-  }
 
   $output .= <<<EOD
   // engage settings
@@ -1429,5 +1425,5 @@ function _janrain_capture_default_loadjs_url() {
     $engageAppName = 'default';
   }
 
-  return 'd16s8pqtk4uodx.cloudfront.net/' . $engageAppName . '/load.js';
+  return 'd29usylhdk1xyu.cloudfront.net/load/' . $engageAppName;
 }

@@ -51,8 +51,9 @@ function janrain_capture_settings() {
   $form['janrain_capture_main2']['capture_load_js_settings']['load_js'] = array(
     '#type' => 'textfield',
     '#title' => t('Load.js file URL'),
-    '#description' => t('URL of the load.js file without the protocol.<br />Example: d16s8pqtk4uodx.cloudfront.net/default/load.js'),
+    '#description' => t('URL of the load.js file without the protocol.'),
     '#default_value' => !empty($janrain_capture_main['capture_load_js_settings']['load_js']) ? $janrain_capture_main['capture_load_js_settings']['load_js'] : '',
+    '#field_prefix' => 'http://',
   );
   $form['janrain_capture_main2']['capture_address'] = array(
     '#type' => 'textfield',
@@ -86,11 +87,6 @@ function janrain_capture_settings() {
     '#title' => t('Registration Flow'),
     '#default_value' => !empty($janrain_capture_ui['registration_flow']) ? $janrain_capture_ui['registration_flow'] : 'socialRegistration',
     '#description' => t('WARNING: DO NOT change this setting unless contacted by the Janrain support team. The default value is social Registration.'),
-  );
-  $form['janrain_capture_ui2']['recaptcha_key'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Recaptcha Public Key'),
-    '#default_value' => !empty($janrain_capture_ui['recaptcha_key']) ? $janrain_capture_ui['recaptcha_key'] : '6LeVKb4SAAAAAGv-hg5i6gtiOV4XrLuCDsJOnYoP',
   );
 
   $janrain_capture_federate = variable_get('janrain_capture_federate2', array());

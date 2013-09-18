@@ -1,7 +1,7 @@
 function janrainCaptureWidgetOnLoad() {
   var $logout_link = jQuery('a[href="/user/logout"]');
   $logout_link.addClass('capture_end_session');
-
+  
   function handleCaptureLogin(result) {
     console.log ("exchanging code for token...");
 
@@ -19,13 +19,11 @@ function janrainCaptureWidgetOnLoad() {
   });
 
   janrain.events.onCaptureSessionNotFound.addHandler(function(result){
-    capture_session_found = false;
     //console.log ("capture session not found");
-
-	  if (typeof(Backplane) != 'undefined' && typeof(Backplane.getChannelID()) == 'undefined') {
+    if (typeof(Backplane) != 'undefined' && typeof(Backplane.getChannelID()) == 'undefined') {
       //console.log ("reset backplane channel");
       Backplane.resetCookieChannel();
-  	}
+    }
   });
 
   janrain.events.onCaptureLoginSuccess.addHandler(handleCaptureLogin);
@@ -33,7 +31,6 @@ function janrainCaptureWidgetOnLoad() {
     window.location.href = '/user/logout';
   });
   janrain.events.onCaptureRegistrationSuccess.addHandler(handleCaptureLogin);
-  
-  //janrain.capture.ui.createCaptureSession(access_token);
+
   janrain.capture.ui.start();
 }

@@ -11,18 +11,22 @@
  */
 function janrain_capture_oauth() {
   global $user;
-  $code = isset($_REQUEST['code']) ? $_REQUEST['code'] : false;
+
+  $code = isset($_REQUEST['code']) ? $_REQUEST['code'] : FALSE;
+
   // I'm not sure about this origin parameter. It doesn't seem to be used by
   // Drupal or its modules. I think what was meant is 'destination', but let's
   // leave it here for backwards compatibility, in case some site relies on it.
-  $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : false;
+  $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : FALSE;
   if (!$origin) {
-    $destination = isset($_REQUEST['destination']) ? $_REQUEST['destination'] : false;
+    $destination = isset($_REQUEST['destination']) ? $_REQUEST['destination'] : FALSE;
   }
-  $url_type = isset($_REQUEST['url_type']) ? $_REQUEST['url_type'] : false;
-  $ver = variable_get('janrain_capture_ver', '1.0');
 
-  if ($ver == '1.0') {
+  $url_type = isset($_REQUEST['url_type']) ? $_REQUEST['url_type'] : FALSE;
+
+  $ver = variable_get('janrain_capture_ver', JANRAIN_CAPTURE_VERSION_DEFAULT);
+
+  if ($ver == JANRAIN_CAPTURE_VERSION_LEGACY) {
     $janrain_capture_fields   = variable_get('janrain_capture_fields', array());
     $janrain_capture_main     = variable_get('janrain_capture_main', array());
     $janrain_capture_optional = variable_get('janrain_capture_optional', array());
@@ -33,8 +37,11 @@ function janrain_capture_oauth() {
     $janrain_capture_optional = variable_get('janrain_capture_federate2', array());
     $janrain_capture_optional = array_merge($janrain_capture_optional, variable_get('janrain_capture_backplane2', array()));
 
-    if (isset($_REQUEST['verification_code'])) { $url_type='verify'; }
-    // do we need to output like verify or forgot
+    if (isset($_REQUEST['verification_code'])) {
+      $url_type='verify';
+    }
+
+    // Verify or forgot password
     if ($url_type) {
       $widget_js = janrain_capture_widget_js();
       $screen = _janrain_capture_get_screen("{$url_type}.html");
@@ -60,7 +67,7 @@ AUTH;
       return NULL;
     }
   }
-
+  
   if ($code) {
     // Cannot use the Drupal url query option because drupal_http_build_query
     // decodes slashes causing incompatibility.
@@ -92,7 +99,24 @@ AUTH;
       }
       $new_user = FALSE;
 
-      if (!$account = user_external_load($profile['result']['uuid'])) {
+      // Check to see if a Drupal user with this email and UUID exists
+      $account = user_load_by_mail($profile['result']['email']);
+
+      if ($account) {
+        $uuid = entity_metadata_wrapper('user', $account)->field_janrain_capture_uuid->value();
+
+        if (!$uuid) {
+          $is_admin = user_access('administer site configuration', $account);
+
+          if ($is_admin) {
+            // Redirect to the admin signin verification endpoint
+            echo url('janrain_capture/admin_signin', array('absolute' => TRUE));
+
+            drupal_exit();
+          }
+        }
+      }
+      else {
         $account = new stdClass();
         $account->name = $profile['result']['email'];
         $account->mail = $store_email ?
@@ -101,54 +125,9 @@ AUTH;
         $account->status = 1;
       }
 
-      if (!isset($account->uid)) {
-        // No user was found with our Capture uuid. If we store email addresses in the
-        // Drupal database, we can also try matching based on email.
-        if ($store_email) {
-          // Look for a local user with the same email address.
-          $loaded_user = user_load_multiple(array(), array('mail' => $profile['result']['email']));
-          $local_user = reset($loaded_user);
-        }
-        if ($store_email && $local_user) {
-          // Are we configured to match users based on email?
-          if (isset($janrain_capture_fields['capture_match_email']) && $janrain_capture_fields['capture_match_email']) {
-            // Check to see if this user is already mapped to a Capture uuid.
-            if (janrain_capture_mapping_exists($local_user->uid)) {
-              $mapped_hook = module_invoke_all('janrain_capture_user_already_mapped');
-              if (empty($mapped_hook) || !in_array(FALSE, $mapped_hook)) {
-                drupal_set_message(t('A user with this email address is already mapped.'), 'error');
-              }
-            }
-            // Bind Capture profile data and uuid to existing user record.
-            else {
-              user_set_authmaps($local_user, array("authname_janrain_capture" => $profile['result']['uuid']));
-              $account = $local_user;
-            }
-          }
-          else {
-            $account = FALSE;
-            $user_exists_hook = module_invoke_all('janrain_capture_user_exists');
-            if (empty($user_exists_hook) || !in_array(FALSE, $user_exists_hook)) {
-              drupal_set_message(t('A user with this email address already exists.'), 'error');
-            }
-          }
-        }
-        // No local users found. Create a new one.
-        else {
-          $user_info['pass'] = user_password();
-          $account = user_save($account, $user_info);
-          $new_user = TRUE;
-          if (!$account->uid) {
-            $failed_create = module_invoke_all('janrain_capture_failed_create');
-            if (empty($failed_create) || !in_array(FALSE, $failed_create)) {
-              drupal_set_message(t('Failed to create new user.'), 'error');
-            }
-          }
-          else {
-            user_set_authmaps($account, array("authname_janrain_capture" => $profile['result']['uuid']));
-          }
-        }
-      }
+      // Add Capture-related information to the local account
+      module_load_include('inc', 'janrain_capture', 'includes/janrain_capture.signin');
+      _janrain_capture_setup_local_account($account, $profile);
 
       $signin = TRUE;
       if ($account === FALSE) {
@@ -201,7 +180,7 @@ AUTH;
     }
   }
 
-  if ($ver == '1.0') {
+  if ($ver == JANRAIN_CAPTURE_VERSION_LEGACY) {
     $front_page = url('<front>', array('absolute' => TRUE));
     $signin_redirect = url('janrain_capture/signin_redirect', array('absolute' => TRUE));
 
@@ -239,11 +218,49 @@ OAUTH_END;
     print $output;
     return NULL;
   }
-  
+
   // Return the front page URL to the ajax function in the signin screen
   echo url('<front>', array('absolute' => TRUE));
 
   drupal_exit();
+}
+
+/**
+ * Callback to show a Drupal login block to verify that a user is an admin
+ */
+function janrain_capture_admin_signin() {
+  global $user;
+
+  if (user_is_logged_in()) {
+    $api = new JanrainCaptureApi();
+    $profile = $api->loadUserEntity();
+
+    if (in_array('administrator', $user->roles) && $profile['result']['email'] == $user->mail) {
+      // Add Capture data to the local account
+      janrain_capture_sync_account($user, $profile['result']);
+      $user = user_save($user);
+      module_invoke_all('janrain_capture_user_authenticated', $profile['result'], $user, FALSE);
+
+      drupal_get_messages(NULL, TRUE);
+      drupal_set_message(t('Success! Your Drupal account has been associated with Capture.'), 'status');
+
+      drupal_goto();
+    } else {
+      $tmp = NULL;
+      session_destroy();
+      user_module_invoke('logout', $tmp, $user);
+      $user = drupal_anonymous_user();
+
+      drupal_set_message(t('The user account must match the user that was logged in using Capture. Please sign into Capture again.'), 'error');
+      drupal_goto();
+    }
+  } else {
+    drupal_set_message(t('A Drupal administrator account already exists with this email address. Please sign in using your Drupal username and password to associate this account with Capture.'), 'warning');
+
+    $form = drupal_get_form('user_login_block');
+
+    return $form;
+  }
 }
 
 /**

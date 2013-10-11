@@ -1,12 +1,11 @@
 INTRODUCTION
 ------------
 
-Authors:
-* Bryce Hamrick (bhamrick)
-* Jeremy Bradbury (JeremyJanrain)
+This module accelerates the time to implement Janrain Capture into your Drupal web sites, helping you to improve your registration conversion rates by allowing your customers to register and sign-in through their Social Network of choice.
 
-This plugin implements full Janrain Capture integration with Drupal. More
-information can be found at:
+Janrain Capture is a hosted registration and authentication system that allows site owners to provide a central repository for user information, that can be deployed on one or more web sites. Registration and authentication can be done through connection to a social network identity provider such as Facebook, Google, Yahoo!, OpenID, LinkedIn, eBay, Twitter and many others or through traditional form field methods.
+
+More information can be found at:
 http://www.janrain.com/products/capture
 
 Documentation for Janrain Capture can be found at:
@@ -17,11 +16,10 @@ http://www.janraincapture.com/docs
 INSTALLATION
 ------------
 
-1) The janrain_capture_ui module in this package relies on the
-Fancybox jQuery library version 1.3.4 to be installed at:
+1) This module relies on the Fancybox jQuery library version 1.3.4 to be installed at:
 sites/all/libraries/fancybox/jquery.fancybox-1.3.4.pack.js
 
-download and unzip:
+Download and unzip:
 http://fancybox.googlecode.com/files/jquery.fancybox-1.3.4.zip
 
 Move jquery.fancybox-1.3.4/fancybox to sites/all/libraries/

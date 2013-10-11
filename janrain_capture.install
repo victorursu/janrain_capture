@@ -99,6 +99,48 @@ function janrain_capture_create_field() {
 }
 
 /**
+ * Implements hook_requirements().
+ */
+function janrain_capture_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime') {
+    // Ensure translations don't break at install time
+    $t = get_t();
+
+    module_load_include('inc', 'janrain_capture', 'includes/janrain_capture.fancybox');
+    $js_css = janrain_capture_js_css();
+
+    foreach ($js_css as $type => $files) {
+      foreach ($files as $name => $filename) {
+        $full_path = janrain_capture_get_library_path($name) . '/' . $filename;
+        if (!file_exists($full_path)) {
+          $args = array('@file' => $filename, '@path' => 'sites/all/libraries/' . $name);
+          $requirements['janrain_capture_' . $type] = array(
+            'title' => $t('Fancybox for Janrain Capture UI'),
+            'description' => $t('Please use the Libraries module, or place the file at @path', $args),
+            'value' => $t('Missing file: @file', $args),
+            'severity' => REQUIREMENT_ERROR,
+          );
+        }
+      }
+    }
+  }
+  return $requirements;
+}
+
+/**
+ * Implements hook_install().
+ */
+function janrain_capture_install() {
+  // Set the default janrain_capture_screens_folder setting
+  variable_set('janrain_capture_screens_folder', 'file:///sites/all/themes/janrain-capture-screens/');
+
+  // Set the default version
+  variable_set('janrain_capture_ver', JANRAIN_CAPTURE_VERSION_DEFAULT);
+}
+
+/**
  * Implements hook_uninstall().
  */
 function janrain_capture_uninstall() {

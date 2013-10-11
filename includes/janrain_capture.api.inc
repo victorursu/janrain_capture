@@ -14,7 +14,7 @@ class JanrainCaptureApi {
    * Retrives API access credentials from settings.
    */
   function __construct() {
-    $ver = variable_get('janrain_capture_ver', '1.0');
+    $ver = variable_get('janrain_capture_ver', JANRAIN_CAPTURE_VERSION_DEFAULT);
     if($ver == '1.0') {
       $janrain_capture_main = variable_get('janrain_capture_main', array());
     } else {

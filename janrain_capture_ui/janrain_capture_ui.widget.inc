@@ -8,9 +8,9 @@
 /**
  * Sets up the admin settings form for this module.
  */
-function janrain_capture_settings() {
+function janrain_capture_ui_settings() {
   global $base_url;
-  
+
   $janrain_capture_main = variable_get('janrain_capture_main2', array());
   $form['janrain_capture_main2'] = array(
     '#type' => 'fieldset',
@@ -67,7 +67,7 @@ function janrain_capture_settings() {
     '#default_value' => !empty($janrain_capture_main['engage_address']) ? $janrain_capture_main['engage_address'] : '',
     '#description' => t('For example, https://myapp.rpxnow.com.'),
   );
-  
+
   $janrain_capture_ui = variable_get('janrain_capture_ui2', array());
   $form['janrain_capture_ui2'] = array(
     '#type' => 'fieldset',
@@ -82,12 +82,6 @@ function janrain_capture_settings() {
     '#default_value' => isset($janrain_capture_ui['profile_enabled']) ? $janrain_capture_ui['profile_enabled'] : 1,
     '#description' => t('Override the standard Drupal profiles and use the Janrain Capture profiles.'),
   );
-  $form['janrain_capture_ui2']['registration_flow'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Registration Flow'),
-    '#default_value' => !empty($janrain_capture_ui['registration_flow']) ? $janrain_capture_ui['registration_flow'] : 'socialRegistration',
-    '#description' => t('WARNING: DO NOT change this setting unless contacted by the Janrain support team. The default value is social Registration.'),
-  );
 
   $janrain_capture_federate = variable_get('janrain_capture_federate2', array());
   $form['janrain_capture_federate2'] = array(
@@ -95,7 +89,7 @@ function janrain_capture_settings() {
     '#title' => t('Federate Settings (optional)'),
     '#tree' => TRUE,
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => isset($janrain_capture_federate['capture_sso_enabled']) ? !$janrain_capture_federate['capture_sso_enabled'] : TRUE,
   );
   $form['janrain_capture_federate2']['capture_sso_enabled'] = array(
     '#type' => 'checkbox',
@@ -109,6 +103,18 @@ function janrain_capture_settings() {
     '#default_value' => !empty($janrain_capture_federate['capture_sso_address']) ? $janrain_capture_federate['capture_sso_address'] : '',
     '#description' => t('For example, myapp.janrainsso.com.'),
   );
+  $form['janrain_capture_federate2']['capture_sso_segment_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('SSO Segment Name'),
+    '#default_value' => !empty($janrain_capture_federate['capture_sso_segment_name']) ? $janrain_capture_federate['capture_sso_segment_name'] : '',
+    '#description' => t('A segment is used to identify a group of sites within your federated web properties to enable a more granular SSO experience. For more information, see http://developers.janrain.com/documentation/federate/segments/'),
+  );
+  $form['janrain_capture_federate2']['capture_sso_supported_segment_names'] = array(
+    '#type' => 'textarea',
+    '#title' => t('SSO Supported Segment Names'),
+    '#default_value' => !empty($janrain_capture_federate['capture_sso_supported_segment_names']) ? $janrain_capture_federate['capture_sso_supported_segment_names'] : '',
+    '#description' => t('This is a list of segments, outside of the SSO Segment Name, that are permitted to access your site via SSO. Segment names should be separated by commas. Example: one,two,three,four'),
+  );
 
   $janrain_capture_backplane = variable_get('janrain_capture_backplane2', array());
   $form['janrain_capture_backplane2'] = array(
@@ -116,7 +122,7 @@ function janrain_capture_settings() {
     '#title' => t('Backplane Settings (optional)'),
     '#tree' => TRUE,
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => isset($janrain_capture_backplane['backplane_enabled']) ? !$janrain_capture_backplane['backplane_enabled'] : TRUE,
   );
   $form['janrain_capture_backplane2']['backplane_enabled'] = array(
     '#type' => 'checkbox',
@@ -137,13 +143,21 @@ function janrain_capture_settings() {
     '#default_value' => isset($janrain_capture_backplane['backplane_version']) ? $janrain_capture_backplane['backplane_version'] : $options['2'],
   );
 
+  $form['janrain_capture_backplane2']['backplane_server_base_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backplane server base URL'),
+    '#field_prefix' => 'https://',
+    '#default_value' => !empty($janrain_capture_backplane['backplane_server_base_url']) ? $janrain_capture_backplane['backplane_server_base_url'] : '',
+    '#description' => t(''),
+  );
+
   $form['janrain_capture_backplane2']['backplane_bus_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Backplane bus name'),
     '#default_value' => !empty($janrain_capture_backplane['backplane_bus_name']) ? $janrain_capture_backplane['backplane_bus_name'] : '',
     '#description' => t('For example, '.$_SERVER['SERVER_NAME']),
   );
-  
+
   $janrain_capture_fields = variable_get('janrain_capture_fields2', array());
   $form['janrain_capture_fields2'] = array(
     '#type' => 'fieldset',
@@ -205,7 +219,7 @@ function janrain_capture_settings() {
     '#group' => 'settings',
     '#tree' => TRUE,
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => isset($conf['enabled']) ? !$conf['enabled'] : TRUE,
     '#description' => t('To configure social sharing providers go to !janrain_dashboard.', array('!janrain_dashboard' => l(t('Janrain dashboard'), 'https://rpxnow.com')) ),
   );
   $form[$group]['enabled'] = array(
@@ -308,19 +322,19 @@ function janrain_capture_settings() {
     '#description' => t('Make it impossible to login to this site outside of Janrain Capture.') . '<br />' . t('WARNING: DO NOT enable this setting until you have made at least one Capture user a Drupal Administrator and all of your user accounts have been migrated to Janrain Capture.'),
   );
   $form['#validate'] = array(
-    'janrain_capture_settings_validate2',
+    'janrain_capture_ui_settings_validate2',
   );
   $form['#submit'] = array(
-    'janrain_capture_settings_submit2',
+    'janrain_capture_ui_settings_submit2',
   );
-  
+
   return system_settings_form($form);
 }
 
 /**
  * Validate callback for the settings form.
  */
-function janrain_capture_settings_validate2($form, &$form_state) {
+function janrain_capture_ui_settings_validate2($form, &$form_state) {
   if ($form_state['values']['janrain_capture_fields2']['capture_match_email'] && !$form_state['values']['janrain_capture_fields2']['capture_enforce_verification']) {
     form_set_error('janrain_capture_fields2][capture_match_email', t('You must enable the Enforce Email Verification setting in order to enable the Match Users on Email setting.'));
   }
@@ -329,12 +343,15 @@ function janrain_capture_settings_validate2($form, &$form_state) {
   if ($form_state['values']['janrain_capture_share']['enabled'] && empty($form_state['values']['janrain_capture_main2']['engage_address'])) {
     form_set_error('janrain_capture_main2][engage_address', t('You must provide an Engage URL in order to enable social share.'));
   }
+
+  // Remove http:// or https:// from the backplane base server URL textfield
+  $form_state['values']['janrain_capture_backplane2']['backplane_server_base_url'] = preg_replace('/http(s)?:\/\//i', '', $form_state['values']['janrain_capture_backplane2']['backplane_server_base_url']);
 }
 
 /**
  * Submit callback for the settings form.
  */
-function janrain_capture_settings_submit2($form, &$form_state) {
+function janrain_capture_ui_settings_submit2($form, &$form_state) {
   // Check to see if default load.js toggle is set
   if ($form_state['values']['janrain_capture_main2']['capture_load_js_default']) {
     $form_state['values']['janrain_capture_ui2']['load_js'] = _janrain_capture_default_loadjs_url();
@@ -342,7 +359,7 @@ function janrain_capture_settings_submit2($form, &$form_state) {
   else {
     $form_state['values']['janrain_capture_ui2']['load_js'] = $form_state['values']['janrain_capture_main2']['capture_load_js_settings']['load_js'];
   }
-  
+
   // Store the comma-separated list of share providers as an array.
   if (!empty($form_state['values']['janrain_capture_share']['nodes']['providers'])) {
     $providers = $form_state['values']['janrain_capture_share']['nodes']['providers'];

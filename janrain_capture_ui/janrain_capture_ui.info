@@ -1,5 +1,5 @@
 name = Janrain Capture UI
-description = Adds UI elements necessary for integrating Janrain Capture
+description = Administrative interface to manage Janrain Capture settings.
 package = Janrain Capture
 core = 7.x
 

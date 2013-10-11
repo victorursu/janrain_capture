@@ -1,93 +1,18 @@
 <?php
-
 /**
  * @file
- * This module implements UI elements for Janrain Capture
- *
- * @see http://www.janrain.com/products/capture
+ * Profile-related functions
  */
-
-/**
- * Implements hook_init().
- */
-function janrain_capture_ui_init() {
-  // Don't do anything if the module settings have not been configured.
-  if (!janrain_capture_configured()) {
-    return;
-  }
-
-  $js_css = janrain_capture_ui_js_css();
-
-  foreach ($js_css as $type => $files) {
-    foreach ($files as $name => $filename) {
-      // Find the location of the library file and add it using the appropriate
-      // function, i.e. drupal_add_js or drupal_add_css.
-      $full_path = janrain_capture_ui_get_library_path($name) . '/' . $filename;
-      $drupal_add = 'drupal_add_' . $type;
-      $drupal_add($full_path, array('every_page' => TRUE));
-    }
-  }
-  // Finally, add the custom JavaScript.
-  drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture_ui.js', array('every_page' => TRUE, 'weight' => 10, 'preprocess' => FALSE));
-}
-
-/**
- * Helper function as a centralized list of JS and CSS files.
- */
-function janrain_capture_ui_js_css() {
-  $js_css = array(
-    'js' => array(
-      'fancybox' => 'jquery.fancybox-1.3.4.pack.js',
-    ),
-    'css' => array(
-      'fancybox' => 'jquery.fancybox-1.3.4.css',
-    )
-  );
-  return $js_css;
-}
-
-/**
- * Find the location of library JS and CSS files.
- */
-function janrain_capture_ui_get_library_path($name) {
-  $lib_paths = &drupal_static(__FUNCTION__, array());
-  if (!isset($lib_paths[$name])) {
-    $cid = 'janrain_capture_libraries';
-    $cache = cache_get($cid);
-
-    if (!empty($cache->data)) {
-      $lib_paths = $cache->data;
-      if (isset($lib_paths[$name])) {
-        return $lib_paths[$name];
-      }
-    }
-
-    // Use Libraries module, if available, to find the correct path.
-    if (function_exists('libraries_get_path')) {
-      $lib_path = libraries_get_path($name);
-      if (!empty($lib_path)) {
-        $lib_paths[$name] = $lib_path;
-      }
-    }
-
-    // If we still haven't found a path, assume it's at sites/all/libraries
-    if (!isset($lib_paths[$name])) {
-      $lib_paths[$name] = 'sites/all/libraries/' . $name;
-    }
-    cache_set($cid, $lib_paths);
-  }
-  return $lib_paths[$name];
-}
 
 /**
  * Implementation of hook_user_view to customize profile view
  */
-function janrain_capture_ui_user_view($account) {
+function janrain_capture_user_view($account) {
   global $base_url;
-  $ver = variable_get('janrain_capture_ver', '1.0');
+  $ver = variable_get('janrain_capture_ver', JANRAIN_CAPTURE_VERSION_DEFAULT);
   $janrain_capture_ui = variable_get('janrain_capture_ui2', array());
   
-  if($ver == '1.0'
+  if($ver == JANRAIN_CAPTURE_VERSION_LEGACY
       || isset($janrain_capture_ui['profile_enabled']) == false
       || $janrain_capture_ui['profile_enabled'] != 1) {
     return $account;
@@ -123,9 +48,9 @@ function janrain_capture_ui_user_view($account) {
 }
 
 /**
- * Implements hook_form_FROM_ID_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
+function janrain_capture_form_user_profile_form_alter(&$form, &$form_state) {
   global $user;
   global $base_url;
 
@@ -149,8 +74,8 @@ function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
     );
     if ($user->uid == $account->uid) {
       // test 1.0 or 2.0
-      $ver = variable_get('janrain_capture_ver', '1.0');
-      if($ver == '2.0') {
+      $ver = variable_get('janrain_capture_ver', JANRAIN_CAPTURE_VERSION_DEFAULT);
+      if($ver == JANRAIN_CAPTURE_VERSION_WIDGET) {
         
         $janrain_capture_ui = variable_get('janrain_capture_ui2', array());
         if(isset($janrain_capture_ui['profile_enabled']) == false
@@ -224,34 +149,4 @@ function janrain_capture_ui_form_user_profile_form_alter(&$form, &$form_state) {
       '#markup' => check_plain($account->mail),
     );
   }
-}
-
-/**
- * Implements hook_block_info().
- */
-function janrain_capture_ui_block_info() {
-  return array(
-    'janrain_capture' => array(
-      'info' => t('Janrain Capture user login'),
-      'cache' => DRUPAL_NO_CACHE,
-    ),
-  );
-}
-
-/**
- * Implements hook_block_view().
- */
-function janrain_capture_ui_block_view($delta) {
-  if (!janrain_capture_configured()) {
-    return array();
-  }
-  $block = array();
-  switch ($delta) {
-    case 'janrain_capture':
-      $block['subject'] = t('Janrain Capture');
-      $block['content'] = janrain_capture_block_content();
-      break;
-  }
-
-  return $block;
 }

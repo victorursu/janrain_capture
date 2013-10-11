@@ -8,7 +8,7 @@
 /**
  * Sets the Capture screens path.
  */
-function janrain_capture_screens_settings() {
+function janrain_capture_ui_screens_settings() {
   $screens_folder = variable_get('janrain_capture_screens_folder', array());
 
   $form['janrain_capture_screens_folder'] = array(
@@ -19,10 +19,10 @@ function janrain_capture_screens_settings() {
   );
 
   $form['#validate'] = array(
-    'janrain_capture_screens_settings_validate',
+    'janrain_capture_ui_screens_settings_validate',
   );
   $form['#submit'] = array(
-    'janrain_capture_screens_settings_submit',
+    'janrain_capture_ui_screens_settings_submit',
   );
 
   return system_settings_form($form);
@@ -31,7 +31,7 @@ function janrain_capture_screens_settings() {
 /**
  * Validate callback for the settings form.
  */
-function janrain_capture_screens_settings_validate($form, &$form_state) {
+function janrain_capture_ui_screens_settings_validate($form, &$form_state) {
   $v = strtolower($form_state['values']['janrain_capture_screens_folder']);
   if ($v
       && strpos($v, 'file:///', 0) !== 0
@@ -45,7 +45,7 @@ function janrain_capture_screens_settings_validate($form, &$form_state) {
 /**
  * Submit callback for the settings form.
  */
-function janrain_capture_screens_settings_submit($form, &$form_state) {
+function janrain_capture_ui_screens_settings_submit($form, &$form_state) {
   // Make sure there's a trailing slash in the capture screens folder URL.
   $screens_folder = $form_state['values']['janrain_capture_screens_folder'];
   if ($screens_folder) {

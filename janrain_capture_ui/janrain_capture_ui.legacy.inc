@@ -8,7 +8,7 @@
 /**
  * Sets up the admin settings form for this module.
  */
-function janrain_capture_settings() {
+function janrain_capture_ui_settings() {
   $janrain_capture_main = variable_get('janrain_capture_main', array());
   $form['janrain_capture_main'] = array(
     '#type' => 'fieldset',
@@ -92,6 +92,20 @@ function janrain_capture_settings() {
     '#default_value' => !empty($janrain_capture_optional['capture_sso_address']) ? $janrain_capture_optional['capture_sso_address'] : '',
     '#description' => t('For example, myapp.janrainsso.com.'),
   );
+
+  $form['janrain_capture_optional']['capture_sso_segment_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('SSO Segment Name'),
+    '#default_value' => !empty($janrain_capture_optional['capture_sso_segment_name']) ? $janrain_capture_optional['capture_sso_segment_name'] : '',
+    '#description' => t('A segment is used to identify a group of sites within your federated web properties to enable a more granular SSO experience. For more information, see http://developers.janrain.com/documentation/federate/segments/'),
+  );
+  $form['janrain_capture_optional']['capture_sso_supported_segment_names'] = array(
+    '#type' => 'textarea',
+    '#title' => t('SSO Supported Segment Names'),
+    '#default_value' => !empty($janrain_capture_optional['capture_sso_supported_segment_names']) ? $janrain_capture_optional['capture_sso_supported_segment_names'] : '',
+    '#description' => t('This is a list of segments, outside of the SSO Segment Name, that are permitted to access your site via SSO. Segment names should be separated by commas. Example: one,two,three,four'),
+  );
+  
   $form['janrain_capture_optional']['backplane_server'] = array(
     '#type' => 'textfield',
     '#title' => t('Backplane server base URL'),
@@ -231,10 +245,10 @@ function janrain_capture_settings() {
     '#description' => t('Make it impossible to login to this site outside of Janrain Capture. <br/>WARNING: DO NOT enable this setting until you have made at least one Capture user a Drupal Administrator and all of your user accounts have been migrated to Janrain Capture.'),
   );
   $form['#validate'] = array(
-    'janrain_capture_settings_validate',
+    'janrain_capture_ui_settings_validate',
   );
   $form['#submit'] = array(
-    'janrain_capture_settings_submit',
+    'janrain_capture_ui_settings_submit',
   );
 
   return system_settings_form($form);
@@ -243,7 +257,7 @@ function janrain_capture_settings() {
 /**
  * Validate callback for the settings form.
  */
-function janrain_capture_settings_validate($form, &$form_state) {
+function janrain_capture_ui_settings_validate($form, &$form_state) {
   if ($form_state['values']['janrain_capture_enforce']) {
     // Do not allow the "enforce" setting to be set if the basic application
     // settings have not been set.
@@ -267,7 +281,7 @@ function janrain_capture_settings_validate($form, &$form_state) {
 /**
  * Submit callback for the settings form.
  */
-function janrain_capture_settings_submit($form, &$form_state) {
+function janrain_capture_ui_settings_submit($form, &$form_state) {
   // Store the Engage URL in the new Capture config, so that we don't have
   // several copies of the same setting.
   $conf2 = variable_get('janrain_capture_main2', array());

@@ -10,7 +10,7 @@
  */
 function janrain_capture_mapping_menu() {
   $items['admin/config/people/janrain_capture/mapping'] = array(
-    'title' => 'Field Mapping',
+    'title' => t('Field Mapping'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_settings_mapping'),
     'access arguments' => array('administer site configuration'),
@@ -19,7 +19,7 @@ function janrain_capture_mapping_menu() {
     'file' => 'janrain_capture_mapping.admin.inc',
   );
   $items["admin/config/people/janrain_capture/fields"] = array(
-    'title' => 'Manage fields',
+    'title' => t('Manage fields'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_settings_fields'),
     'access arguments' => array('administer site configuration'),
@@ -28,14 +28,14 @@ function janrain_capture_mapping_menu() {
     'file' => 'janrain_capture_mapping.admin.inc',
   );
   $items['admin/config/people/janrain_capture/fields/reset'] = array(
-    'title' => 'Reset to defaults',
+    'title' => t('Reset to defaults'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_settings_fields_reset'),
     'access arguments' => array('administer site configuration'),
     'file' => 'janrain_capture_mapping.admin.inc',
   );
   $items['admin/config/people/janrain_capture/fields/edit'] = array(
-    'title' => 'Edit field',
+    'title' => t('Edit field'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_settings_fields_edit'),
     'access arguments' => array('administer site configuration'),
@@ -43,7 +43,7 @@ function janrain_capture_mapping_menu() {
     'file' => 'janrain_capture_mapping.admin.inc',
   );
   $items['admin/config/people/janrain_capture/fields/delete'] = array(
-    'title' => 'Delete field',
+    'title' => t('Delete field'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_settings_fields_delete'),
     'access arguments' => array('administer site configuration'),

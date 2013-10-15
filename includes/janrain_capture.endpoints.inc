@@ -12,17 +12,20 @@
 function janrain_capture_oauth() {
   global $user;
 
-  $code = isset($_REQUEST['code']) ? $_REQUEST['code'] : FALSE;
+  $query = drupal_get_query_parameters($_GET, array('q', 'code'));
+
+  // Get the front page URL to the ajax function in the signin screen
+  $front_page_url = url('<front>', array('absolute' => TRUE));
 
   // I'm not sure about this origin parameter. It doesn't seem to be used by
   // Drupal or its modules. I think what was meant is 'destination', but let's
   // leave it here for backwards compatibility, in case some site relies on it.
-  $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : FALSE;
+  $origin = isset($query['origin']) ? $query['origin'] : FALSE;
   if (!$origin) {
-    $destination = isset($_REQUEST['destination']) ? $_REQUEST['destination'] : FALSE;
+    $destination = isset($query['destination']) ? $query['destination'] : FALSE;
   }
 
-  $url_type = isset($_REQUEST['url_type']) ? $_REQUEST['url_type'] : FALSE;
+  $url_type = isset($query['url_type']) ? $query['url_type'] : FALSE;
 
   $ver = variable_get('janrain_capture_ver', JANRAIN_CAPTURE_VERSION_DEFAULT);
 
@@ -37,12 +40,14 @@ function janrain_capture_oauth() {
     $janrain_capture_optional = variable_get('janrain_capture_federate2', array());
     $janrain_capture_optional = array_merge($janrain_capture_optional, variable_get('janrain_capture_backplane2', array()));
 
-    if (isset($_REQUEST['verification_code'])) {
+    if (isset($query['verification_code'])) {
       $url_type='verify';
     }
 
     // Verify or forgot password
     if ($url_type) {
+      module_load_include('inc', 'janrain_capture', 'includes/janrain_capture.widget');
+
       $widget_js = janrain_capture_widget_js();
       $screen = _janrain_capture_get_screen("{$url_type}.html");
       $js = _janrain_capture_get_screen("{$url_type}.js");
@@ -63,41 +68,43 @@ function janrain_capture_oauth() {
 </html>
 AUTH;
 
-      print $output;
+      echo $output;
       return NULL;
     }
   }
-  
-  if ($code) {
-    // Cannot use the Drupal url query option because drupal_http_build_query
-    // decodes slashes causing incompatibility.
-    $redirect_uri = url('janrain_capture/oauth', array('absolute' => TRUE));
-    if ($origin) {
-      $redirect_uri .= (strpos($redirect_uri, '?') !== FALSE ? '&' : '?') . 'origin=' . urlencode($origin);
+
+  if (empty($_GET['code'])) {
+    $no_oauth = module_invoke_all('janrain_capture_no_oauth');
+
+    if (empty($no_oauth) || !in_array(FALSE, $no_oauth)) {
+      drupal_set_message(t('No Oauth token found!'), 'error');
+
+      echo $front_page_url;
+      drupal_exit();
     }
-    else if ($destination) {
-      $redirect_uri .= '?destination=' . str_replace('%2F', '/', rawurlencode($destination));
-    }
+  }
+  else {
+    $redirect_uri_options = array(
+      'absolute' => TRUE,
+      'query' => $query,
+    );
+
+    $redirect_uri = url('janrain_capture/oauth', $redirect_uri_options);
+
     $api = new JanrainCaptureApi();
 
-    if ($api->newAccessToken($code, $redirect_uri) == FALSE) {
-      $profile = NULL;
-    }
-    else {
-      $profile = $api->loadUserEntity();
-    }
+    $profile = $api->newAccessToken($_GET['code'], $redirect_uri) ? $api->loadUserEntity() : FALSE;
 
     if (!$profile || $profile['stat'] != 'ok') {
       drupal_set_message(t('We were unable to complete your request.'), 'error');
       watchdog('janrain_capture', 'Failed to obtain a Capture record', array(), WATCHDOG_ERROR);
     }
     else {
-      // Do we store users' emails in the Drupal database?
-      $store_email = !isset($janrain_capture_fields['capture_no_email']) || !$janrain_capture_fields['capture_no_email'];
+      $store_email = $janrain_capture_fields['capture_no_email'];
+
       if ($store_email) {
         $_SESSION['janrain_capture_email'] = $profile['result']['email'];
       }
-      $new_user = FALSE;
 
       // Check to see if a Drupal user with this email and UUID exists
       $account = user_load_by_mail($profile['result']['email']);
@@ -129,59 +136,48 @@ AUTH;
       module_load_include('inc', 'janrain_capture', 'includes/janrain_capture.signin');
       _janrain_capture_setup_local_account($account, $profile);
 
-      $signin = TRUE;
-      if ($account === FALSE) {
-        $signin = FALSE;
-      }
-      if (isset($_SESSION['janrain_capture_action'])
-            && ($_SESSION['janrain_capture_action'] == 'finish_third_party'
-            || $_SESSION['janrain_capture_action'] == 'legacy_register')
-            && isset($janrain_capture_fields['capture_enforce_verification'])
-            && $janrain_capture_fields['capture_enforce_verification']
-            && $profile['result']['emailVerified'] == NULL) {
-        $signin = FALSE;
-        if (isset($_SESSION['janrain_capture_email'])){
-          drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_email'])), 'status');
-        }
-        else {
-          drupal_set_message(t('A verification link has been sent. Please check your email.'), 'status');
-        }
-      }
-      elseif (isset($janrain_capture_fields['capture_enforce_verification'])
-          && $janrain_capture_fields['capture_enforce_verification']
-          && $profile['result']['emailVerified'] == NULL) {
-        $signin = FALSE;
-        $args = array(
-          'action' => 'resend_verification_email',
-          'access_token' => $_SESSION['janrain_capture_access_token'],
-          'redirect_uri' => url('janrain_capture/resend_verification_email', array('absolute' => TRUE)),
-        );
-        $resend_link = janrain_capture_url($args);
-        $email_unverified = module_invoke_all('janrain_capture_email_unverified', $resend_link);
-        if (empty($email_unverified) || !in_array(FALSE, $email_unverified)) {
-          drupal_set_message(t('Your email address has not yet been verified. Please check your email and try again. <a href="@resend-link">Click here</a> to have this email resent.', array('@resend-link' => $resend_link)), 'error');
-        }
-      }
+      $action = isset($_SESSION['janrain_capture_action']) ? $_SESSION['janrain_capture_action'] : NULL;
 
-      if ($signin) {
+      if (!_janrain_capture_user_verified($profile, $janrain_capture_fields['capture_enforce_verification'])) {
+        if ($action == 'finish_third_party' || $action == 'legacy_register') {
+          if (isset($_SESSION['janrain_capture_email'])){
+            drupal_set_message(t('A verification link has been sent to @email. Please check your email.', array('@email' => $_SESSION['janrain_capture_email'])), 'status');
+          }
+          else {
+            drupal_set_message(t('A verification link has been sent. Please check your email.'), 'status');
+          }
+        } else {
+          $args = array(
+            'action' => 'resend_verification_email',
+            'access_token' => $_SESSION['janrain_capture_access_token'],
+            'redirect_uri' => url('janrain_capture/resend_verification_email', array('absolute' => TRUE)),
+          );
+
+          $resend_link = janrain_capture_url($args);
+
+          $email_unverified = module_invoke_all('janrain_capture_email_unverified', $resend_link);
+
+          if (empty($email_unverified) || !in_array(FALSE, $email_unverified)) {
+            drupal_set_message(t('Your email address has not yet been verified. Please check your email and try again. <a href="@resend-link">Click here</a> to have this email resent.', array('@resend-link' => $resend_link)), 'error');
+          }
+        }
+      }
+      else {
         $form_state['uid'] = $account->uid;
+
         user_login_submit(array(), $form_state);
+
         // Re-sync Capture data to make sure we're up to date.
         janrain_capture_sync_account($account, $profile['result']);
+
         $account = user_save($account);
-        module_invoke_all('janrain_capture_user_authenticated', $profile['result'], $account, $new_user);
+
+        module_invoke_all('janrain_capture_user_authenticated', $profile['result'], $account, FALSE);
       }
-    }
-  }
-  else {
-    $no_oauth = module_invoke_all('janrain_capture_no_oauth');
-    if (empty($no_oauth) || !in_array(FALSE, $no_oauth)) {
-      drupal_set_message(t('No Oauth token found!'), 'error');
     }
   }
 
   if ($ver == JANRAIN_CAPTURE_VERSION_LEGACY) {
-    $front_page = url('<front>', array('absolute' => TRUE));
     $signin_redirect = url('janrain_capture/signin_redirect', array('absolute' => TRUE));
 
     $output = <<<OAUTH_END
@@ -199,7 +195,7 @@ AUTH;
       }
       if (window.location.href != window.parent.location.href) {
         if (window.parent.location.href.indexOf("logout") > 1) {
-          window.parent.location.href = "{$front_page}";
+          window.parent.location.href = "{$front_page_url}";
         } else {
           if (redirect_url) {
             window.parent.location.href = redirect_url;
@@ -208,21 +204,30 @@ AUTH;
           }
         }
       } else {
-        window.location.href = redirect_url || "{$front_page}";
+        window.location.href = redirect_url || "{$front_page_url}";
       }
     </script>
   </body>
 </html>
 OAUTH_END;
 
-    print $output;
+    echo $output;
     return NULL;
   }
 
-  // Return the front page URL to the ajax function in the signin screen
-  echo url('<front>', array('absolute' => TRUE));
-
+  echo $front_page_url;
   drupal_exit();
+}
+
+/**
+ * Helper function to see if the user is verified
+ */
+function _janrain_capture_user_verified($profile, $enforce_verification) {
+  if ($enforce_verification && $profile['result']['emailVerified'] == NULL) {
+    return FALSE;
+  } else {
+    return TRUE;
+  }
 }
 
 /**

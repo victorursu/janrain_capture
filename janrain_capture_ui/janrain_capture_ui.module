@@ -12,7 +12,7 @@ function janrain_capture_ui_menu() {
   $janrain_capture_ver = variable_get('janrain_capture_ver', JANRAIN_CAPTURE_VERSION_DEFAULT);
 
   $items['admin/config/people/janrain_capture'] = array(
-    'title' => 'Janrain Capture',
+    'title' => t('Janrain Capture'),
     'description' => t('Connect to Janrain Capture service for centralized storage of social profile data.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_ui_version_settings'),
@@ -21,7 +21,7 @@ function janrain_capture_ui_menu() {
     'file' => "janrain_capture_ui.version.inc",
   );
   $items['admin/config/people/janrain_capture/version'] = array(
-    'title' => 'Version',
+    'title' => t('Version'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_ui_version_settings'),
     'access arguments' => array('administer site configuration'),
@@ -30,7 +30,7 @@ function janrain_capture_ui_menu() {
     'file' => "janrain_capture_ui.version.inc",
   );
   $items['admin/config/people/janrain_capture/screens'] = array(
-    'title' => 'Screens',
+    'title' => t('Screens'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_ui_screens_settings'),
     'access arguments' => array('administer site configuration'),
@@ -39,7 +39,7 @@ function janrain_capture_ui_menu() {
     'file' => "janrain_capture_ui.screens.inc",
   );
   $items['admin/config/people/janrain_capture/settings'] = array(
-    'title' => 'Settings',
+    'title' => t('Settings'),
     'page callback' => 'janrain_capture_ui_get_settings',
     'access arguments' => array('administer site configuration'),
     'weight' => -30,

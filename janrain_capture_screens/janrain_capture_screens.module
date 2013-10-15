@@ -10,7 +10,7 @@
  */
 function janrain_capture_screens_menu_alter(&$items) {
   $items['admin/config/people/janrain_capture/screens'] = array(
-    'title' => 'Screens',
+    'title' => t('Screens'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('janrain_capture_admin_screens_settings'),
     'access arguments' => array('administer site configuration'),

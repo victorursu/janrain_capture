@@ -173,7 +173,7 @@ function janrain_capture_menu() {
       || isset($conf['capture_sso_enabled'])) {
 
     $items['janrain_capture/simple_logout'] = array(
-      'title' => 'Plain logout page',
+      'title' => t('Plain logout page'),
       'page callback' => 'janrain_capture_simple_logout_page',
       'access callback' => 'user_is_logged_in',
       'type' => MENU_CALLBACK,

@@ -88,7 +88,7 @@ function janrain_capture_widget_js() {
   // federate
   $settings["capture.federate"]           = $janrain_settings['capture_sso_enabled'];
   $settings["capture.federateServer"]     = 'https://' . $janrain_settings['capture_sso_address'];
-  $settings["capture.federateXdReceiver"] = url(NULL, array('absolute' => TRUE)) . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html';
+  $settings["capture.federateXdReceiver"] = $base_url . base_path() . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html';
   $settings["capture.federateLogoutUri"]  = url('janrain_capture/simple_logout', array('absolute' => TRUE));
   $settings["capture.federateSegment"]    = isset($janrain_settings['capture_sso_segment_name']) ? $janrain_settings['capture_sso_segment_name'] : '';
 

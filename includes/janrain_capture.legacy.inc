@@ -91,6 +91,9 @@ function janrain_capture_legacy_add_js($settings = array()) {
     $_SESSION['janrain_capture_password_recover'] = FALSE;
   }
 
+  // Add janrain_capture.js
+  $scripts['file'][] = drupal_get_path('module', 'janrain_capture') . '/janrain_capture.js';
+
   // Add the scripts
   foreach ($scripts['file'] as $s) {
     drupal_add_js($s, array('type' => 'file', 'every_page' => TRUE, 'weight' => 1, 'preprocess' => FALSE));

@@ -100,7 +100,7 @@ AUTH;
       watchdog('janrain_capture', 'Failed to obtain a Capture record', array(), WATCHDOG_ERROR);
     }
     else {
-      $store_email = $janrain_capture_fields['capture_no_email'];
+      $store_email = isset($janrain_capture_fields['capture_no_email']) ? $janrain_capture_fields['capture_no_email'] : FALSE;
 
       if ($store_email) {
         $_SESSION['janrain_capture_email'] = $profile['result']['email'];

@@ -1,7 +1,7 @@
 function janrainCaptureWidgetOnLoad() {
   var $logout_link = jQuery('a[href="/user/logout"]');
   $logout_link.addClass('capture_end_session');
-  
+
   function handleCaptureLogin(result) {
     console.log ("exchanging code for token...");
 
@@ -9,7 +9,7 @@ function janrainCaptureWidgetOnLoad() {
       url: Drupal.settings.basePath + 'janrain_capture/oauth?code=' + result.authorizationCode,
       success: function(token) {
         console.log('code for token exchange completed');
-        window.location.href = token;
+        window.location.reload();
       },
       async: false
     });

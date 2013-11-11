@@ -60,6 +60,7 @@ function janrain_capture_widget_add_scripts() {
 function janrain_capture_widget_js() {
   global $base_url;
   global $base_path;
+  global $language;
 
   $janrain_settings = variable_get('janrain_capture_fields2', array());
   $janrain_settings = array_merge($janrain_settings, variable_get('janrain_capture_main2', array()));
@@ -106,6 +107,9 @@ function janrain_capture_widget_js() {
   $settings["capture.backplaneBusName"]   = $janrain_settings['backplane_bus_name'];
   $settings["capture.backplaneVersion"]   = $janrain_settings['backplane_version'];
 
+  // miscellaneous
+  $settings["capture.language"]           = $language->language;
+
   if (module_exists('janrain_capture_screens')) {
     $settings["capture.stylesheets"] = "'" . file_create_url(_janrain_capture_get_screen_file('stylesheets/styles.css')) . "'";
     if ($mobile_stylesheet = _janrain_capture_get_screen_file('stylesheets/mobile-styles.css')) {
@@ -119,7 +123,7 @@ function janrain_capture_widget_js() {
     $folder_url = variable_get('janrain_capture_screens_folder', 'file:///sites/all/themes/janrain-capture-screens/');
 
     // If path is local, search for user agent-specific stylesheets in the file system.
-    if(strpos($folder_url, 'file:///', 0) === 0) {
+    if (strpos($folder_url, 'file:///', 0) === 0) {
       // Example of $folder_url: file:///sites/all/themes/janrain-capture-screens/
       $web_path = str_replace('file://', '', $folder_url);
       // Example of $web_path: /sites/all/themes/janrain-capture-screens/
@@ -141,7 +145,8 @@ function janrain_capture_widget_js() {
         if ($is_nested) {
           $screens_message = 'No "stylesheets" subfolder found in the screens folder (@path). Please check the Janrain Capture module settings.';
 
-        } else {
+        }
+        else {
           $screens_message = 'The screens folder (@path) could not be found. Please check the Janrain Capture module settings.';
         }
 
@@ -259,7 +264,7 @@ EOD;
 EOD;
 
   // Backplane
-  if($settings["capture.backplane"]) {
+  if ($settings["capture.backplane"]) {
     $output .= <<<EOD
   // backplane settings
   janrain.settings.capture.backplane = '{$settings["capture.backplane"]}';
@@ -272,7 +277,7 @@ EOD;
     }
   }
 
-  if($settings["capture.federate"]) {
+  if ($settings["capture.federate"]) {
     $output .= <<<EOD
   // federate settings
   janrain.settings.capture.federate = '{$settings["capture.federate"]}';
@@ -293,6 +298,12 @@ EOD;
     }
 
     $output .= "
+
+";
+  }
+
+  if ($settings["capture.language"]) {
+    $output .= "  janrain.settings.language = '{$settings["capture.language"]}';
 
 ";
   }

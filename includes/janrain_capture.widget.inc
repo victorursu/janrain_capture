@@ -25,33 +25,47 @@ function janrain_capture_widget_add_settings($settings = array()) {
   }
 
   // Add settings array into a JS variable
-  drupal_add_js($settings, array('type' => 'setting', 'every_page' => TRUE, 'preprocess' => FALSE, 'weight' => 0));
+  drupal_add_js($settings, array('type' => 'setting', 'every_page' => TRUE, 'preprocess' => FALSE, 'weight' => 0, 'scope' => 'header',));
 }
 
 /**
  * Adds widget JS scripts to the page.
  */
 function janrain_capture_widget_add_scripts() {
-  // External scripts
-  drupal_add_js('https://d7v0k4dt27zlp.cloudfront.net/assets/capture_client.js', array(
-    'type' => 'external',
-    'every_page' => TRUE,
-    'weight' => 2,
-    'preprocess' => FALSE));
+  global $base_url;
 
   // File scripts
   drupal_add_js(drupal_get_path('module', 'janrain_capture') . '/janrain_capture.js', array(
     'type' => 'file',
     'every_page' => TRUE,
     'weight' => 1,
-    'preprocess' => FALSE));
+    'preprocess' => FALSE,
+    'scope' => 'header',));
 
-  // Inline scripts
-  drupal_add_js(janrain_capture_widget_js(), array(
-    'type' => 'inline',
-    'every_page' => TRUE,
-    'weight' => 3,
-    'preprocess' => FALSE));
+  $widget = array(
+    '#type' => 'markup',
+    '#prefix' => '<script type="text/javascript">',
+    '#suffix' => '</script>',
+    '#markup' => janrain_capture_widget_js(),
+    '#weight' => 3,
+  );
+  $capture_client = array(
+    '#type' => 'markup',
+    '#prefix' => '<script type="text/javascript" src="https://d7v0k4dt27zlp.cloudfront.net/assets/capture_client.js">',
+    '#suffix' => '</script>',
+    '#markup' => '',
+    '#weight' => 2,
+  );
+  $capture_js = array(
+    '#type' => 'markup',
+    '#prefix' => '<script type="text/javascript" src="'. $base_url . '/' . drupal_get_path('module', 'janrain_capture') . '/janrain_capture.js">',
+    '#suffix' => '</script>',
+    '#markup' => '',
+    '#weight' => 1,
+  );
+
+  drupal_add_html_head($widget, 'janrain_capture_widget_js');
+  drupal_add_html_head($capture_client, 'janrain_capture_client_js');
 }
 
 /**

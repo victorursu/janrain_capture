@@ -68,33 +68,3 @@ function janrain_capture_get_library_path($name) {
   }
   return $lib_paths[$name];
 }
-
-/**
- * Implements hook_block_info().
- */
-function janrain_capture_block_info() {
-  return array(
-    'janrain_capture' => array(
-      'info' => t('Janrain Capture user login'),
-      'cache' => DRUPAL_NO_CACHE,
-    ),
-  );
-}
-
-/**
- * Implements hook_block_view().
- */
-function janrain_capture_block_view($delta) {
-  if (!janrain_capture_configured()) {
-    return array();
-  }
-  $block = array();
-  switch ($delta) {
-    case 'janrain_capture':
-      $block['subject'] = t('Janrain Capture');
-      $block['content'] = janrain_capture_block_content();
-      break;
-  }
-
-  return $block;
-}

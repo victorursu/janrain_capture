@@ -59,18 +59,15 @@ function janrain_capture_legacy_add_js($settings = array()) {
       xd_receiver: '{$xd_receiver}',
 ";
     
-    if (isset($janrain_capture_optional['capture_sso_segment_name'])) {
+    if (!empty($janrain_capture_optional['capture_sso_segment_name'])
+      && !empty($janrain_capture_optional['capture_sso_supported_segment_names'])) {
       $legacy_scripts .= "
-      segment: '{$janrain_capture_optional['capture_sso_segment_name']}'";
-    }
-
-    if ($capture_sso_supported_segment_names) {
-      $legacy_scripts .= "
+      segment: '{$janrain_capture_optional['capture_sso_segment_name']}',
       supported_segments: '{$capture_sso_supported_segment_names}'";
     }
 
     $legacy_scripts .= "
-    }";
+    });";
 
     $scripts['inline'][] = $legacy_scripts;
   }

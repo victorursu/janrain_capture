@@ -73,6 +73,11 @@ function janrain_capture_page_build(&$page) {
     janrain_capture_legacy_add_js($settings);
   }
   else {
+    if (!empty($_SESSION['janrain_capture_admin_signin'])) {
+      unset($_SESSION['janrain_capture_admin_signin']);
+      drupal_goto('janrain_capture/admin_signin');
+    }
+
     module_load_include('inc', 'janrain_capture', 'includes/janrain_capture.widget');
     
     janrain_capture_widget_add_settings($settings);
@@ -176,7 +181,7 @@ function janrain_capture_menu() {
       'page callback' => 'janrain_capture_simple_logout_page',
       'access callback' => 'user_is_logged_in',
       'type' => MENU_CALLBACK,
-      'file' => "janrain_capture.pages.inc",
+      'file' => 'includes/janrain_capture.endpoints.inc',
     );
   }
 
@@ -513,6 +518,36 @@ function janrain_capture_render_logout_link() {
   }
  
   return $link;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function janrain_capture_block_info() {
+  return array(
+    'janrain_capture' => array(
+      'info' => t('Janrain Capture user login'),
+      'cache' => DRUPAL_NO_CACHE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function janrain_capture_block_view($delta) {
+  if (!janrain_capture_configured()) {
+    return array();
+  }
+  $block = array();
+  switch ($delta) {
+    case 'janrain_capture':
+      $block['subject'] = t('Janrain Capture');
+      $block['content'] = janrain_capture_block_content();
+      break;
+  }
+
+  return $block;
 }
 
 /**

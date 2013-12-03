@@ -116,6 +116,8 @@ AUTH;
           $is_admin = user_access('administer site configuration', $account);
 
           if ($is_admin) {
+            $_SESSION['janrain_capture_admin_signin'] = TRUE;
+
             // Redirect to the admin signin verification endpoint
             echo url('janrain_capture/admin_signin', array('absolute' => TRUE));
 

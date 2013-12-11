@@ -9,8 +9,6 @@
  * Implements hook_menu().
  */
 function janrain_capture_ui_menu() {
-  $janrain_capture_ver = variable_get('janrain_capture_ver', JANRAIN_CAPTURE_VERSION_DEFAULT);
-
   $items['admin/config/people/janrain_capture'] = array(
     'title' => t('Janrain Capture'),
     'description' => t('Connect to Janrain Capture service for centralized storage of social profile data.'),

@@ -5,6 +5,98 @@
  */
 
 /**
+ * Check if the screens are hosted remotely
+ */
+function _janrain_capture_widget_is_remote_screens() {
+  $screenPath = variable_get('janrain_capture_screens_folder', NULL);
+  return (strpos($screenPath, 'http') === 0);
+}
+
+/**
+ * Update the local cache of remote JTL and Event files aka "Screens".
+ */
+function janrain_capture_widget_update_remote_screens() {
+  // wtb oop or enums
+  static $allowedScreens = array('signin', 'edit-profile', 'public-profile', 'forgot', 'verify');
+  static $allowedTypes = array('js', 'html');
+
+  $cacheDir = JANRAIN_CAPTURE_WIDGET_SCREEN_CACHE_DIR;
+
+  // make sure cache directory is ready for files
+  if (!file_prepare_directory($cacheDir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+    // cache dir failure, notify and bail
+    watchdog('janrain_capture',
+      'Failed to create screen cache directory: %directory',
+      array('%directory' => $cacheDir),
+      WATCHDOG_ERROR);
+    return;
+  }
+  // hook cron shouldn't run this but lets sanity check anyway
+  if (!_janrain_capture_widget_is_remote_screens()) {
+    return;
+  }
+  $screenSourceDir = variable_get('janrain_capture_screens_folder');
+  $pathTemplate = '%s/%s.%s';
+  // grab each file
+  foreach ($allowedScreens as &$name) {
+    foreach ($allowedTypes as &$ext) {
+      $screenSource = sprintf($pathTemplate, $screenSourceDir, $name, $ext);
+      $screenDest = sprintf($pathTemplate, $cacheDir, $name, $ext);
+      $response = drupal_http_request($screenSource);
+      if ($response->code != 200) {
+        // notify there was an issue, but try to get the other files
+        watchdog('janrain_capture', $response->error, array(), WATCHDOG_ERROR);
+        continue;
+      }
+      // use unmanaged since remote source is always authoritative
+      $success = file_unmanaged_save_data($response->data, $screenDest, FILE_EXISTS_REPLACE);
+      if (FALSE === $success) {
+        // failed to save a file that was succesfully downloaded
+        watchdog('janrain_capture', "Failed to write %screenDest", array('screenDest' => $screenDest), WATCHDOG_ERROR);
+      }
+    }
+  }
+}
+
+/**
+ * Get the contents of a JTL or events file
+ * @param string screenName
+ *   The type of screen (signin, forgot, etc...)
+ * @param string fileType
+ *   'html' for JTL or 'js' for events
+ * @return string
+ *   return empty string on error conditions, otherwise returns the JTL or javascript content of the file.
+ */
+function _janrain_capture_widget_get_screen($screenName, $fileType) {
+  // wtb oop
+  static $allowedScreens = array('signin', 'edit-profile', 'public-profile', 'forgot', 'verify');
+  static $allowedTypes = array('js', 'html');
+
+  // sanity check that it's a valid screen request
+  if (!(in_array($screenName, $allowedScreens) && in_array($fileType, $allowedTypes))) {
+    // no such screen exists, return empty string.
+    return '';
+  }
+
+  // screen name and type are valid get the content
+  if (_janrain_capture_widget_is_remote_screens()) {
+    // files are remote so pull from local cache (updated by _janrain_capture_widget_update_screens();
+    $fileName = sprintf('%s/%s.%s', JANRAIN_CAPTURE_WIDGET_SCREEN_CACHE_DIR, $screenName, $fileType);
+  }
+  else {
+    // files are local or invalid screens folder setting
+    $fileName = sprintf('%s/janrain-capture-screens/%s.%s', drupal_get_path('module', 'janrain_capture'), $screenName, $fileType);
+  }
+  if (!is_readable($fileName)) {
+    // let everyone know there was a problem with the file, but don't kill the site.
+    drupal_set_message("Unable to read $fileName");
+    return '';
+  }
+  // file exists and is readable, return the contents.
+  return file_get_contents($fileName);
+}
+
+/**
  * Adds widget JS settings to the page.
  */
 function janrain_capture_widget_add_settings($settings = array()) {
@@ -93,7 +185,8 @@ function janrain_capture_widget_js() {
   $share_settings = variable_get('janrain_capture_share', array());
   if (isset($share_settings["enabled"]) && $share_settings["enabled"]) {
     $settings["packages"]                 = '["login","capture","share"]';
-  } else {
+  }
+  else {
     $settings["packages"]                 = '["login","capture"]';
   }
 
@@ -143,70 +236,18 @@ function janrain_capture_widget_js() {
       // Example of $web_path: /sites/all/themes/janrain-capture-screens/
       $fs_path = DRUPAL_ROOT . $web_path;
       // Example of $fs_path: /var/www/d7/sites/all/themes/janrain-capture-screens/
-      //watchdog('janrain_capture', 'Searching for Capture screen stylesheets in: ' . $fs_path,  array(), WATCHDOG_DEBUG);
       $web_url = $base_url . $web_path;
 
-      $is_nested = is_dir($fs_path.'stylesheets');
+      $base_stylesheet_path = "'{$web_url}stylesheets/janrain.css'";
+      $mobile_stylesheet_path = "'{$web_url}stylesheets/janrain_mobile.css'";
 
-      if ($is_nested) {
-        $fs_path .= "stylesheets";
-      }
-
-      try {
-        $dir = new DirectoryIterator($fs_path);
-      }
-      catch (UnexpectedValueException $e) {
-        if ($is_nested) {
-          $screens_message = 'No "stylesheets" subfolder found in the screens folder (@path). Please check the Janrain Capture module settings.';
-
-        }
-        else {
-          $screens_message = 'The screens folder (@path) could not be found. Please check the Janrain Capture module settings.';
-        }
-
-        watchdog('janrain_capture',
-                 $screens_message,
-                 array('@path' => $fs_path),
-                 WATCHDOG_WARNING,
-                 l(t('Janrain Capture module settings'), 'admin/config/people/janrain_capture'));
-
-        return;
-      }
-
-      if ($is_nested) {
-        $web_url .= "stylesheets/";
-      }
-
-      $css = array();
-      $css_mobile = array();
-      $css_ie = array();
-      if ($dir) {
-        foreach ($dir as $fileinfo) {
-          $fn = $fileinfo->getFilename();
-          if (!$fileinfo->isDot() && stripos($fn,'.css')) {
-            switch (true){
-              // if file begins with mobile set is as a mobile style
-            case (stripos($fn, 'mobile') === 0):
-              $css_mobile[] = "'{$web_url}{$fn}'";
-              break;
-              // if file begins with ie set is as an IE style
-            case (stripos($fn, 'ie') === 0):
-              $css_ie[] = "'{$web_url}{$fn}'";
-              break;
-              // otherwise set it as a normal style
-            default:
-              $css[] = "'{$web_url}{$fn}'";
-              break;
-            }
-          }
-        }
-      }
-      $settings["capture.stylesheets"] = implode(', ', $css);
-      $settings["capture.mobileStylesheets"] = implode(', ', $css_mobile);
-      $settings["capture.conditionalIEStylesheets"] = implode(', ', $css_ie);
-    } else {
+      $settings["capture.stylesheets"] = $base_stylesheet_path;
+      $settings["capture.mobileStylesheets"] = $mobile_stylesheet_path;
+    }
+    else {
       // Remote stylesheets
-      $settings["capture.stylesheets"] = "'{$folder_url}stylesheets/styles.css'";
+      $settings["capture.stylesheets"] = "'{$folder_url}stylesheets/janrain.css'";
+      $settings["capture.mobileStylesheets"] = "'{$folder_url}stylesheets/janrain_mobile.css'";
     }
 
     // Log a warning if directories are setup properly but no stylesheets were found

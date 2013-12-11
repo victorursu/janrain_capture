@@ -40,13 +40,6 @@ function janrain_capture_schema() {
 }
 
 /**
- * Implements hook_enable().
- */
-function janrain_capture_enable() {
-  janrain_capture_create_field();
-}
-
-/**
  * Programatically create a field (field_janrain_capture_uuid) on the User entity
  */
 function janrain_capture_create_field() {
@@ -133,6 +126,9 @@ function janrain_capture_requirements($phase) {
  * Implements hook_install().
  */
 function janrain_capture_install() {
+  // Create the UUID field.
+  janrain_capture_create_field();
+
   // Set the default janrain_capture_screens_folder setting
   variable_set('janrain_capture_screens_folder', 'file:///sites/all/themes/janrain-capture-screens/');
 

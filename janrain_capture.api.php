@@ -24,7 +24,7 @@ function hook_janrain_capture_user_authenticated($capture_profile, $account, $ne
 
     // EXAMPLE:
     // Execute the welcome_message_mail function with key being either 'male',
-    // 'female', or null.
+    // 'female', or NULL.
     drupal_mail('welcome_message',
       $capture_profile['gender'],
       $account->mail,
@@ -39,7 +39,7 @@ function hook_janrain_capture_user_authenticated($capture_profile, $account, $ne
  * This hook is executed immediately after the user profile is updated in
  * Capture and synchronized with the local Drupal user. By default this the
  * completion of this process will redirect the user to $origin. If you wish
- * to prevent this behavior you can do so by returning false from an
+ * to prevent this behavior you can do so by returning FALSE from an
  * implementation of this hook.
  *
  * @param array $capture_profile

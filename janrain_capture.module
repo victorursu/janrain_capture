@@ -1184,8 +1184,8 @@ function janrain_capture_page_alter(&$page) {
 
   if (!empty($page['content']) && !empty($page['content']['system_main']) && !empty($page['content']['system_main']['#form_id'])) {
     if ($page['content']['system_main']['#form_id'] == 'user_profile_form') {
+      $account = $page['content']['system_main']['#user'];
       if ($enforce || janrain_capture_mapping_exists($account->uid)) {
-        $account = $page['content']['system_main']['#user'];
 
         // Check to make sure the user accounts match
         if ($user->uid == $account->uid) {

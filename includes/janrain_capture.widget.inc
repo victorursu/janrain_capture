@@ -68,6 +68,8 @@ function janrain_capture_widget_update_remote_screens() {
  *   return empty string on error conditions, otherwise returns the JTL or javascript content of the file.
  */
 function _janrain_capture_widget_get_screen($screenName, $fileType) {
+  global $base_url;
+
   // wtb oop
   static $allowedScreens = array('signin', 'edit-profile', 'public-profile', 'forgot', 'verify');
   static $allowedTypes = array('js', 'html');
@@ -78,14 +80,38 @@ function _janrain_capture_widget_get_screen($screenName, $fileType) {
     return '';
   }
 
+  // check for screens module
+  if (module_exists('janrain_capture_screens')) {
+    $fileName = sprintf('%s.%s', $screenName, $fileType);
+
+    // proceed with screens module
+    if (!in_array($fileName, _janrain_capture_get_screens())) {
+      return '';
+    }
+
+    if ($screen_file = _janrain_capture_get_screen_file($fileName)) {
+      return file_get_contents($screen_file);
+    }
+
+    return '';
+  }
+
   // screen name and type are valid get the content
   if (_janrain_capture_widget_is_remote_screens()) {
     // files are remote so pull from local cache (updated by _janrain_capture_widget_update_screens();
     $fileName = sprintf('%s/%s.%s', JANRAIN_CAPTURE_WIDGET_SCREEN_CACHE_DIR, $screenName, $fileType);
   }
   else {
-    // files are local or invalid screens folder setting
-    $fileName = sprintf('%s/janrain-capture-screens/%s.%s', drupal_get_path('module', 'janrain_capture'), $screenName, $fileType);
+    $screenPath = variable_get('janrain_capture_screens_folder', 'file:///sites/all/themes/janrain-capture-screens/');
+
+    if (strpos($screenPath, 'file:///', 0) === 0) {
+      // files are local, usually in sites/all/themes
+      $fileName = sprintf('%s%s%s.%s', DRUPAL_ROOT, str_replace('file://', '', $screenPath), $screenName, $fileType);
+    }
+    else {
+      // invalid screens folder setting
+      $fileName = sprintf('%s/janrain-capture-screens/%s.%s', drupal_get_path('module', 'janrain_capture'), $screenName, $fileType);
+    }
   }
   if (!is_readable($fileName)) {
     // let everyone know there was a problem with the file, but don't kill the site.

@@ -10,7 +10,6 @@
  * redirect_uri Capture redirects the user to and performs the authentication.
  */
 function janrain_capture_oauth() {
-  global $base_url;
   global $user;
 
   $query = drupal_get_query_parameters($_GET, array('q', 'code'));
@@ -90,7 +89,7 @@ AUTH;
       'query' => $query,
     );
 
-    $redirect_uri = $base_url . base_path() . 'janrain_capture/oauth';
+    $redirect_uri = url('janrain_capture/oauth', $redirect_uri_options);
 
     $api = new JanrainCaptureApi();
 

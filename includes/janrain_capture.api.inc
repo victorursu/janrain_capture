@@ -52,8 +52,9 @@ class JanrainCaptureApi {
 
     $headers = array(
       'Content-Type' => 'application/x-www-form-urlencoded',
-      'User-Agent' => 'Drupal',
+      'User-Agent' => 'Drupal/janrain_capture-' . JANRAIN_CAPTURE_MODULE_VERSION,
     );
+
     if (isset($access_token)) {
       $headers['Authorization'] = "OAuth $access_token";
     }

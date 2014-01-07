@@ -200,6 +200,9 @@ function janrain_capture_widget_js() {
   $janrain_settings = array_merge($janrain_settings, variable_get('janrain_capture_federate2', array()));
   $janrain_settings = array_merge($janrain_settings, variable_get('janrain_capture_backplane2', array()));
 
+  // module
+  $settings["plex.moduleVersion"] = JANRAIN_CAPTURE_MODULE_VERSION;
+
   // capture
   $settings["capture.redirectUri"]        = url('janrain_capture/oauth', array('absolute' => TRUE));
   $settings["capture.appId"]              = $janrain_settings['capture_app_id'];
@@ -296,6 +299,9 @@ function janrainSignOut(){
   if (typeof window.janrain !== 'object') window.janrain = {};
   window.janrain.settings = {};
   window.janrain.settings.capture = {};
+
+  // module settings
+  janrain.plex.moduleVersion = '{$settings["plex.moduleVersion"]}';
 
   // capture settings
   janrain.settings.capture.redirectUri = '{$settings["capture.redirectUri"]}';

@@ -27,6 +27,10 @@ define('JANRAIN_CAPTURE_VERSION_WIDGET', '2.0');
 define('JANRAIN_CAPTURE_VERSION_DEFAULT', JANRAIN_CAPTURE_VERSION_WIDGET);
 define('JANRAIN_CAPTURE_WIDGET_SCREEN_CACHE_DIR', 'public://janrain_capture_screens/cache');
 
+// Module-specific constants
+
+define('JANRAIN_CAPTURE_MODULE_VERSION', '7.x-2.11');
+
 /**
  * Implements hook_cron().
  */

@@ -36,12 +36,13 @@ function janrain_capture_widget_update_remote_screens() {
     return;
   }
   $screenSourceDir = variable_get('janrain_capture_screens_folder');
-  $pathTemplate = '%s%s.%s';
+  $sourcePathTemplate = '%s%s.%s';
+  $destPathTemplate = '%s/%s.%s';
   // grab each file
   foreach ($allowedScreens as &$name) {
     foreach ($allowedTypes as &$ext) {
-      $screenSource = sprintf($pathTemplate, $screenSourceDir, $name, $ext);
-      $screenDest = sprintf($pathTemplate, $cacheDir, $name, $ext);
+      $screenSource = sprintf($sourcePathTemplate, $screenSourceDir, $name, $ext);
+      $screenDest = sprintf($destPathTemplate, $cacheDir, $name, $ext);
       $response = drupal_http_request($screenSource);
       if ($response->code != 200) {
         // notify there was an issue, but try to get the other files
@@ -115,7 +116,7 @@ function _janrain_capture_widget_get_screen($screenName, $fileType) {
   }
   if (!is_readable($fileName)) {
     // let everyone know there was a problem with the file, but don't kill the site.
-    drupal_set_message("Unable to read $fileName");
+    drupal_set_message("Unable to read $fileName", 'error');
     return '';
   }
   // file exists and is readable, return the contents.

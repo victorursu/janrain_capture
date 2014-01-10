@@ -36,7 +36,7 @@ function janrain_capture_widget_update_remote_screens() {
     return;
   }
   $screenSourceDir = variable_get('janrain_capture_screens_folder');
-  $pathTemplate = '%s/%s.%s';
+  $pathTemplate = '%s%s.%s';
   // grab each file
   foreach ($allowedScreens as &$name) {
     foreach ($allowedTypes as &$ext) {
@@ -269,14 +269,17 @@ function janrain_capture_widget_js() {
 
       $base_stylesheet_path = "'{$web_url}stylesheets/janrain.css'";
       $mobile_stylesheet_path = "'{$web_url}stylesheets/janrain_mobile.css'";
+      $ie_stylesheet_path = "'{$web_url}stylesheets/janrain_ie.css'";
 
       $settings["capture.stylesheets"] = $base_stylesheet_path;
       $settings["capture.mobileStylesheets"] = $mobile_stylesheet_path;
+      $settings["capture.conditionalIEStylesheets"] = $ie_stylesheet_path;
     }
     else {
       // Remote stylesheets
       $settings["capture.stylesheets"] = "'{$folder_url}stylesheets/janrain.css'";
       $settings["capture.mobileStylesheets"] = "'{$folder_url}stylesheets/janrain_mobile.css'";
+      $settings["capture.conditionalIEStylesheets"] = "'{$folder_url}stylesheets/janrain_ie.css'";
     }
 
     // Log a warning if directories are setup properly but no stylesheets were found
@@ -297,6 +300,7 @@ function janrainSignOut(){
 }
 (function() {
   if (typeof window.janrain !== 'object') window.janrain = {};
+  window.janrain.plex = {};
   window.janrain.settings = {};
   window.janrain.settings.capture = {};
 

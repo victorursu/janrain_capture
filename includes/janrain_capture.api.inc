@@ -100,7 +100,7 @@ class JanrainCaptureApi {
    */
   protected function updateCaptureSession($json_data) {
     $_SESSION['janrain_capture_access_token'] = $json_data['access_token'];
-    $_SESSION['janrain_capture_refresh_token'] = $this->refreshTokenProtect($json_data['refresh_token']);
+    $_SESSION['janrain_capture_refresh_token'] = $json_data['refresh_token'];
     $_SESSION['janrain_capture_expires_in'] = REQUEST_TIME + $json_data['expires_in'];
 
     $password_recover = (isset($json_data['transaction_state']['capture']['password_recover'])
@@ -109,50 +109,6 @@ class JanrainCaptureApi {
     if (isset($json_data['transaction_state']['capture']['action'])) {
       $_SESSION['janrain_capture_action'] = $json_data['transaction_state']['capture']['action'];
     }
-  }
-
-  /**
-   * Helper function to conceal the refresh token and set a cookie.
-   *
-   * @param string $raw_refresh_token
-   *   The plain-text refresh token received from the capture server.
-   *
-   * @return string
-   *   A base64 encoded, encrypted token.
-   */
-  protected function refreshTokenProtect($raw_refresh_token) {
-    $len = strlen($raw_refresh_token);
-    // Use a random pad of matching length to protect the token value.
-    $pad = drupal_random_bytes($len);
-    $cookie_pad = base64_encode($pad);
-    // XOR the refresh token and encode the binary value.
-    $protected_refresh_token = base64_encode($raw_refresh_token ^ $pad);
-    // Use the same liftime and other params as for a Drupal session cookie.
-    $params = session_get_cookie_params();
-    $expire = $params['lifetime'] ? REQUEST_TIME + $params['lifetime'] : 0;
-    setcookie('janrain_capture_pad', $cookie_pad, $expire, $params['path'], $params['domain'], FALSE, $params['httponly']);
-    return $protected_refresh_token;
-  }
-
-  /**
-   * Helper function to decode a refresh token using a pad from a cookie.
-   *
-   * @param string $protcted_refresh_token
-   *   The base64 encoded, encrypted token.
-   *
-   * @return mixed
-   *   A plain text token string, or NULL on failure.
-   */
-  protected function refreshTokenReveal($protected_refresh_token) {
-    $raw_refresh_token = NULL;
-    $bin = base64_decode($protected_refresh_token);
-    if ($bin && isset($_COOKIE['janrain_capture_pad'])) {
-      $pad = base64_decode($_COOKIE['janrain_capture_pad']);
-      if ($pad && strlen($bin) == strlen($pad)) {
-        $raw_refresh_token = $bin ^ $pad;
-      }
-    }
-    return $raw_refresh_token;
   }
 
   /**
@@ -202,7 +158,7 @@ class JanrainCaptureApi {
       return FALSE;
     }
 
-    $refresh_token = $this->refreshTokenReveal($_SESSION['janrain_capture_refresh_token']);
+    $refresh_token = $_SESSION['janrain_capture_refresh_token'];
     $command = "oauth/token";
     $arg_array = array(
       'refresh_token' => $refresh_token,

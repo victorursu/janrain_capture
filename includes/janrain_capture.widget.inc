@@ -321,6 +321,8 @@ function janrainSignOut(){
   janrain.settings.capture.keepProfileCookieAfterLogout = true;
   janrain.settings.capture.setProfileData = true;
 
+  janrain.settings.capture.federateEnableSafari = true;
+
   // styles
   janrain.settings.capture.stylesheets = [{$settings["capture.stylesheets"]}];
 

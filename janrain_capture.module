@@ -29,7 +29,7 @@ define('JANRAIN_CAPTURE_WIDGET_SCREEN_CACHE_DIR', 'public://janrain_capture_scre
 
 // Module-specific constants
 
-define('JANRAIN_CAPTURE_MODULE_VERSION', '7.x-2.11');
+define('JANRAIN_CAPTURE_MODULE_VERSION', '7.x-2.12');
 
 /**
  * Implements hook_cron().
@@ -613,7 +613,7 @@ function janrain_capture_sync_account($account, $profile) {
   // either by implementing the janrain_capture_profile_sync hook or using the mapping
   // submodule.
   if (!$account->name) {
-    $account->name = $profile['email'];
+    $account->name = $profile['uuid'];
   }
   // Set the uuid field value from the Capture uuid. Hardcoding LANGUAGE_NONE here
   // should be ok as the field is not translatable.
@@ -1148,7 +1148,7 @@ function janrain_capture_user_view($account) {
       || $janrain_capture_ui['profile_enabled'] != 1) {
     return $account;
   }
-  $uuid = $account->field_janrain_capture_uuid['und'][0]['value'];
+  $uuid = entity_metadata_wrapper('user', $account)->field_janrain_capture_uuid->value();
   $screen = _janrain_capture_get_screen('public-profile.html');
 
   $account->content = array();

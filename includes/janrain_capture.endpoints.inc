@@ -57,6 +57,7 @@ function janrain_capture_oauth() {
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script type="text/javascript">
 {$js}
 {$widget_js}
@@ -127,7 +128,7 @@ AUTH;
       }
       else {
         $account = new stdClass();
-        $account->name = $profile['result']['email'];
+        $account->name = $profile['result']['uuid'];
         $account->mail = $store_email ?
           $profile['result']['email'] :
           $profile['result']['uuid'] . '@localhost';

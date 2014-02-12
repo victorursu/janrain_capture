@@ -261,12 +261,6 @@ function janrain_capture_ui_settings() {
     '#default_value' => isset($sconf['default_summary']) ? $sconf['default_summary'] : JANRAIN_CAPTURE_SHARE_SUMMARY_NODES,
     '#description' => t('Specify the default description (including tokens) to be used when sharing content.')
   );
-  $form[$group][$sgroup]['providers'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Comma-separated list of providers'),
-    '#default_value' => isset($sconf['providers']) ? implode(', ', $sconf['providers']) : '',
-    '#description' => t('Specify a comma-separated list of providers whose icons should be displayed on the share button. For example: facebook, twitter, yahoo, linkedin.')
-  );
   $sgroup = 'comments';
   $sconf = isset($conf[$sgroup]) ? $conf[$sgroup] : array();
   $form[$group][$sgroup] = array(
@@ -360,17 +354,22 @@ function janrain_capture_ui_settings_submit2($form, &$form_state) {
     $form_state['values']['janrain_capture_ui2']['load_js'] = $form_state['values']['janrain_capture_main2']['capture_load_js_settings']['load_js'];
   }
 
-  // Store the comma-separated list of share providers as an array.
-  if (!empty($form_state['values']['janrain_capture_share']['nodes']['providers'])) {
-    $providers = $form_state['values']['janrain_capture_share']['nodes']['providers'];
-    $providers = str_replace(' ', '', $providers);
-    $providers = explode(',', $providers);
+  if ($form_state['values']['janrain_capture_share']['enabled']) {
+    $api = new JanrainCaptureApi();
+    $providers = $api->getShareProviders();
+
+    if (count($providers)) {
+      $form_state['values']['janrain_capture_share']['nodes']['providers'] = $providers;
+    }
+    else {
+      $form_state['values']['janrain_capture_share']['enabled'] = 0;
+      $form_state['values']['janrain_capture_share']['nodes']['providers'] = array();
+      drupal_set_message(t('Social Sharing has been disabled because no providers were found. Please configure one or more providers in the Engage dashboard and try again.'), 'error');
+    }
   }
   else {
-    $providers = array();
+    $form_state['values']['janrain_capture_share']['nodes']['providers'] = array();
   }
-
-  $form_state['values']['janrain_capture_share']['nodes']['providers'] = $providers;
 
   // Rebuild the menu in case the "enforce" setting changed.
   variable_set('menu_rebuild_needed', TRUE);

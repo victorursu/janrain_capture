@@ -60,19 +60,18 @@ class JanrainCaptureApi {
     }
     $options = array('headers' => $headers);
 
-    if (isset($arg_array)) {
+    if ($arg_array) {
       $arg_array = array_merge($arg_array, $this->args);
-      $options['method'] = 'POST';
-      $options['data'] = http_build_query($arg_array, '', '&');
     }
+    else {
+      $arg_array = $this->args;
+    }
+
+    $options['method'] = 'POST';
+    $options['data'] = http_build_query($arg_array, '', '&');
     $result = drupal_http_request($url, $options);
 
-    if (!isset($result->data) || $result->code != '200') {
-      $this->reportError($result);
-      return FALSE;
-    }
-
-    $json_data = json_decode($result->data, TRUE);
+    $json_data = $this->decodeData($result);
 
     // NULL decoded value indicates a parse error.
     if (!isset($json_data)) {
@@ -88,6 +87,17 @@ class JanrainCaptureApi {
       $this->reportError($error);
       return FALSE;
     }
+
+    return $json_data;
+  }
+
+  protected function decodeData($result) {
+    if (!isset($result->data) || $result->code != '200') {
+      $this->reportError($result);
+      return FALSE;
+    }
+
+    $json_data = json_decode($result->data, TRUE);
 
     return $json_data;
   }
@@ -212,6 +222,33 @@ class JanrainCaptureApi {
 
     // Return NULL if there is an error code.
     return isset($user_entity['code']) ? NULL : $user_entity;
+  }
+
+  /**
+   * Retrieves a list of Social Sharing providers for Engage
+   */
+  public function getShareProviders() {
+    $items = $this->call('settings/items');
+    
+    $rpx_key = $items['result']['rpx_key'];
+
+    $headers = array(
+      'Content-Type' => 'application/x-www-form-urlencoded',
+      'User-Agent' => 'Drupal/janrain_capture-' . JANRAIN_CAPTURE_MODULE_VERSION,
+    );
+
+    $url = sprintf('https://rpxnow.com/plugin/lookup_rp?apiKey=%s', $rpx_key);
+    $options = array('headers' => $headers);
+    $result = drupal_http_request($url, $options);
+
+    $json_data = $this->decodeData($result);
+
+    if (isset($json_data['shareProviders'])) {
+      return explode(',', $json_data['shareProviders']);
+    }
+    else {
+      return FALSE;
+    }
   }
 
 }

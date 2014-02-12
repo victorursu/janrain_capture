@@ -6,7 +6,7 @@ function janrainCaptureWidgetOnLoad() {
     console.log ("exchanging code for token...");
 
     jQuery.ajax({
-      url: Drupal.settings.basePath + 'janrain_capture/oauth?code=' + result.authorizationCode,
+      url: Drupal.settings.basePath + Drupal.settings.pathPrefix + 'janrain_capture/oauth?code=' + result.authorizationCode,
       success: function(token) {
         console.log('code for token exchange completed');
         window.location.reload();

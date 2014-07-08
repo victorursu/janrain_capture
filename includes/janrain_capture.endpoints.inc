@@ -90,7 +90,15 @@ AUTH;
       'query' => $query,
     );
 
-    $redirect_uri = url('janrain_capture/oauth', $redirect_uri_options);
+    $settings = variable_get('janrain_capture_main2', array());
+
+    if (!empty($settings['mobile_friendly'])) {
+      $proto_redirect_uri = $_SESSION['janrain_capture_redirect_uri'];
+    }
+    else {
+      $proto_redirect_uri = 'janrain_capture/oauth';
+    }
+    $redirect_uri = url($proto_redirect_uri, $redirect_uri_options);
 
     $api = new JanrainCaptureApi();
 

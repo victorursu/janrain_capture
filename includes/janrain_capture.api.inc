@@ -70,7 +70,6 @@ class JanrainCaptureApi {
     $options['method'] = 'POST';
     $options['data'] = http_build_query($arg_array, '', '&');
     $result = drupal_http_request($url, $options);
-
     $json_data = $this->decodeData($result);
 
     // NULL decoded value indicates a parse error.

@@ -246,6 +246,7 @@ function janrain_capture_widget_js() {
 
   // miscellaneous
   $settings["capture.language"]           = $language->language;
+  $settings["mobileFriendly"] = empty($janrain_settings['mobile_friendly']) ? FALSE : (bool) $janrain_settings['mobile_friendly'];
 
   if (module_exists('janrain_capture_screens')) {
     $settings["capture.stylesheets"] = "'" . file_create_url(_janrain_capture_get_screen_file('stylesheets/styles.css')) . "'";
@@ -324,37 +325,26 @@ function janrainSignOut(){
   janrain.settings.capture.federateEnableSafari = true;
 
   // styles
-  janrain.settings.capture.stylesheets = [{$settings["capture.stylesheets"]}];
-
+  janrain.settings.capture.stylesheets = [{$settings["capture.stylesheets"]}];\n
 EOD;
 
   // mobile styles
   if (isset($settings["capture.mobileStylesheets"]) && $settings["capture.mobileStylesheets"] != '') {
-    $output .= <<<EOD
-  janrain.settings.capture.mobileStylesheets = [{$settings["capture.mobileStylesheets"]}];
-
-EOD;
+    $output .= "janrain.settings.capture.mobileStylesheets = [{$settings['capture.mobileStylesheets']}];\n";
   }
 
   //IE styles
   if (isset($settings["capture.conditionalIEStylesheets"]) && $settings["capture.conditionalIEStylesheets"] != '') {
-    $output .= <<<EOD
-  janrain.settings.capture.conditionalIEStylesheets = [{$settings["capture.conditionalIEStylesheets"]}];
-
-EOD;
+    $output .= "janrain.settings.capture.conditionalIEStylesheets = [{$settings['capture.conditionalIEStylesheets']}];\n";
   }
 
   // captcha
-  $output .= <<<EOD
-  janrain.settings.capture.recaptchaPublicKey = '6LeVKb4SAAAAAGv-hg5i6gtiOV4XrLuCDsJOnYoP';
-
-EOD;
+  $output .= "janrain.settings.capture.recaptchaPublicKey = '6LeVKb4SAAAAAGv-hg5i6gtiOV4XrLuCDsJOnYoP';\n";
 
   $output .= <<<EOD
   // engage settings
   janrain.settings.appUrl = '{$settings["appUrl"]}';
-  janrain.settings.tokenAction = 'event';
-
+  janrain.settings.tokenAction = 'event';\n
 EOD;
 
   // Backplane
@@ -363,11 +353,10 @@ EOD;
   // backplane settings
   janrain.settings.capture.backplane = '{$settings["capture.backplane"]}';
   janrain.settings.capture.backplaneBusName = '{$settings["capture.backplaneBusName"]}';
-  janrain.settings.capture.backplaneVersion = '{$settings["capture.backplaneVersion"]}';
-
+  janrain.settings.capture.backplaneVersion = '{$settings["capture.backplaneVersion"]}';\n
 EOD;
     if ($settings['capture.backplaneServerBaseUrl']) {
-      $output .= "janrain.settings.capture.backplaneServerBaseUrl = 'https://{$settings['capture.backplaneServerBaseUrl']}';";
+      $output .= "janrain.settings.capture.backplaneServerBaseUrl = 'https://{$settings['capture.backplaneServerBaseUrl']}';\n";
     }
   }
 
@@ -377,29 +366,39 @@ EOD;
   janrain.settings.capture.federate = '{$settings["capture.federate"]}';
   janrain.settings.capture.federateServer = '{$settings["capture.federateServer"]}';
   janrain.settings.capture.federateXdReceiver = '{$settings["capture.federateXdReceiver"]}';
-  janrain.settings.capture.federateLogoutUri = '{$settings["capture.federateLogoutUri"]}';
-
+  janrain.settings.capture.federateLogoutUri = '{$settings["capture.federateLogoutUri"]}';\n
 EOD;
 
     if (isset($settings["capture.federateSegment"])) {
-      $output .= "  janrain.settings.capture.federateSegment = '{$settings["capture.federateSegment"]}';
-";
+      $output .= "janrain.settings.capture.federateSegment = '{$settings["capture.federateSegment"]}';\n";
     }
 
     if (isset($settings["capture.federateSupportedSegments"])) {
-      $output .= "  janrain.settings.capture.federateSupportedSegments = {$settings["capture.federateSupportedSegments"]};
-";
+      $output .= "janrain.settings.capture.federateSupportedSegments = {$settings["capture.federateSupportedSegments"]};\n";
     }
-
-    $output .= "
-
-";
   }
 
   if ($settings["capture.language"]) {
-    $output .= "  janrain.settings.language = '{$settings["capture.language"]}';
+    $output .= "janrain.settings.language = '{$settings["capture.language"]}';\n";
+  }
 
-";
+  if ($settings["mobileFriendly"]) {
+    global $base_root;
+    $current_url = $base_root . request_uri();
+    $_SESSION['janrain_capture_redirect_uri'] = $current_url;
+
+    $output .=
+      "\n// mobile-specific settings
+      janrain.settings.tokenAction = 'url';
+      janrain.settings.popup = false;
+      janrain.settings.tokenUrl = janrain.settings.capture.captureServer;
+      janrain.settings.capture.redirectUri = '{$current_url}';
+      janrain.settings.capture.redirectFlow = true;\n";
+  }
+  else {
+    if (isset($_SESSION['janrain_capture_redirect_uri'])) {
+      unset($_SESSION['janrain_capture_redirect_uri']);
+    }
   }
 
   if (!isset($_SESSION['janrain_capture_access_token'])) {

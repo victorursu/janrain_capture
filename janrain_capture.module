@@ -29,7 +29,7 @@ define('JANRAIN_CAPTURE_WIDGET_SCREEN_CACHE_DIR', 'public://janrain_capture_scre
 
 // Module-specific constants
 
-define('JANRAIN_CAPTURE_MODULE_VERSION', '7.x-2.12');
+define('JANRAIN_CAPTURE_MODULE_VERSION', '7.x-2.13');
 
 /**
  * Implements hook_cron().
@@ -884,12 +884,14 @@ function janrain_capture_comment_view_alter(&$build) {
   }
 
   $summary = addslashes(text_summary(strip_tags($args['summary']), NULL, 150) . '...');
+  $args['title'] = addslashes($args['title']);
+  $args['message'] = addslashes($args['message']);
 
   // Attach a "share" link to this comment.
   $attributes = array(
     'class' => array('janrain-capture-link-social'),
     'id' => 'janrain-capture-link-social-comment-'. $comment->cid,
-    'onclick' => "janrainCaptureSetShare('$url','{$args['title']}','{$args['message']}','$summary','facebook'); return false;",
+    'onclick' => "janrainCaptureSetShare('$url','{$args['title']}','$summary','{$args['message']}','facebook'); return false;",
   );
   $build['links']['comment']['#links']['comment-janrain-capture-share'] = array(
     'title' => t('share'),
@@ -905,7 +907,7 @@ function janrain_capture_comment_view_alter(&$build) {
   if ($popup_social) {
     // FIXME: this is prone to race conditions; should fire when the widget
     // finishes loading instead.
-    $output = "setTimeout(function(){janrainCaptureSetShare('$url','{$args['message']}','{$args['title']}','$summary','facebook')},600);";
+    $output = "setTimeout(function(){janrainCaptureSetShare('$url','{$args['title']}','$summary','{$args['message']}','facebook')},600);";
     drupal_add_js($output, array('type' => 'inline', 'scope' => 'footer', 'preprocess' => FALSE ));
     unset($_SESSION['janrain_capture_comment_social_cid']);
   }
@@ -968,6 +970,9 @@ function _janrain_capture_share_button($node) {
   }
 
   $args['summary'] = addslashes(text_summary(strip_tags($args['summary']), NULL, 128) . '...');
+  $args['title'] = addslashes($args['title']);
+  $args['message'] = addslashes($args['message']);
+
   $args['url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . request_uri();
 
   janrain_capture_share_js();
@@ -1028,7 +1033,7 @@ function theme_janrain_capture_icon($variables) {
   }
   if (isset($variables['args'])) {
     $args = $variables['args'];
-    return '<span' . drupal_attributes(array('class' => $style, 'id' => 'janrain-capture-link-social-node-' . $nid, 'rel' => $provider, 'onclick' => "janrainCaptureSetShare('{$args['url']}','{$args['title']}','{$args['message']}','{$args['summary']}',this.getAttribute('rel')); return false;",)) . '></span>';
+    return '<span' . drupal_attributes(array('class' => $style, 'id' => 'janrain-capture-link-social-node-' . $nid, 'rel' => $provider, 'onclick' => "janrainCaptureSetShare('{$args['url']}','{$args['title']}','{$args['summary']}','{$args['message']}',this.getAttribute('rel')); return false;",)) . '></span>';
   } else {
     return '<div' . drupal_attributes(array('class' => $style, 'id' => 'janrain-capture-link-social-node-' . $nid)) . '></div>';
   }

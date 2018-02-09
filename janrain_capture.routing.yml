@@ -5,13 +5,13 @@ janrain_capture.oauth:
   requirements:
     _access: 'TRUE'
 janrain_capture.forgot:
-  path: '/janrain_capture/forgot' 
+  path: '/janrain_capture/forgot'
   defaults:
     _controller: '\Drupal\janrain_capture\Controller\ForgotPasswordController::restorePassword'
   requirements:
     _user_is_logged_in: 'FALSE'
 janrain_capture.simple_logout:
-  path: '/janrain_capture/logout' 
+  path: '/janrain_capture/logout'
   defaults:
     _controller: '\Drupal\janrain_capture\Controller\SimpleLogoutController::logout'
   requirements:

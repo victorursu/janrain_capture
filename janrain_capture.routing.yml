@@ -11,7 +11,7 @@ janrain_capture.forgot:
   requirements:
     _user_is_logged_in: 'FALSE'
 janrain_capture.simple_logout:
-  path: '/janrain_capture/simple_logout' 
+  path: '/janrain_capture/logout' 
   defaults:
     _controller: '\Drupal\janrain_capture\Controller\SimpleLogoutController::logout'
   requirements:

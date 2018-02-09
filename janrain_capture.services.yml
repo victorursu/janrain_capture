@@ -1,0 +1,10 @@
+services:
+  janrain_capture.screen_loader_manager:
+    class: Drupal\janrain_capture\ScreenLoaderManager
+    arguments: ['@config.factory', '@logger.factory', '@http_client']
+  janrain_capture.markup_builder:
+    class: Drupal\janrain_capture\JanrainMarkupBuilder
+    arguments: ['@config.factory', '@janrain_capture.screen_loader_manager']
+  janrain_capture.api_service:
+    class: Drupal\janrain_capture\JanrainCaptureApiService
+    arguments: ['@config.factory', '@http_client', '@user.private_tempstore']

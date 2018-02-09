@@ -1,0 +1,9 @@
+janrain_capture.capture_settings_tab:
+  route_name: janrain_capture.settings.capture
+  title: Capture settings
+  base_route: janrain_capture.settings.capture
+
+janrain_capture.screens_settings_tab:
+  route_name: janrain_capture.settings.screens
+  title: Screens settings
+  base_route: janrain_capture.settings.capture

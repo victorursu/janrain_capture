@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * @file
+ * Janrain Capture module file.
+ */
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\user\Entity\User;
+
+/**
+ * Implements hook_cron().
+ */
+function janrain_capture_cron() {
+  /** @var \Drupal\janrain_capture\ScreenLoaderManager $screenLoaderManager */
+  $screenLoaderManager = \Drupal::service('janrain_capture.screen_loader_manager');
+  if ($screenLoaderManager->isRemote()) {
+    $screenLoaderManager->updateRemoteScreens();
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function janrain_capture_page_attachments(array &$attachments) {
+  /** @var \Drupal\janrain_capture\JanrainMarkupBuilder $markupBuilder */
+  $markupBuilder = \Drupal::service('janrain_capture.markup_builder');
+  $attachment = $markupBuilder->getPageAttachment();
+  $attachments['#attached']['library'][] = $attachment['library'];
+  $attachments['#attached']['drupalSettings']['janrain'] = $attachment['drupalSettings'];
+}
+
+/**
+ * Implements hook_page_bottom().
+ */
+function janrain_capture_page_bottom(array &$page_bottom) {
+  /** @var \Drupal\janrain_capture\JanrainMarkupBuilder $markupBuilder */
+  $markupBuilder = \Drupal::service('janrain_capture.markup_builder');
+  $page_bottom += $markupBuilder->getScreenRenderArray('signin');
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view().
+ */
+function janrain_capture_user_view(array &$build, User $entity, EntityViewDisplayInterface $display, $view_mode) {
+  /** @var \Drupal\janrain_capture\JanrainMarkupBuilder $markupBuilder */
+  $markupBuilder = \Drupal::service('janrain_capture.markup_builder');
+
+  /** @var \Drupal\janrain_capture\JanrainCaptureApiService $apiService*/
+  $apiService = \Drupal::service('janrain_capture.api_service');
+
+  if ($apiService->getUserEntity()){
+    $build += $markupBuilder->getScreenRenderArray('public-profile');
+    $uuid = $entity->getUsername();
+    $build['script'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'script',
+      '#value' => '<script>
+      if(window.location.search != "?uuid=' . $uuid . '") {
+        window.location.search = "?uuid=' . $uuid . '";
+      }</script>',
+    ];
+  }
+}

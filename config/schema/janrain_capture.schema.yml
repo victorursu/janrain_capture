@@ -1,0 +1,42 @@
+janrain_capture.settings:
+  type: mapping
+  label: 'Janrain Capture settings'
+  mapping:
+    capture:
+      type: mapping
+      label: 'Capture'
+      mapping:
+        app_id:
+          type: string
+          label: 'Application id'
+        client_id:
+          type: string
+          label: 'Client id'
+        client_secret:
+          type: string
+          label: 'Client secret'
+        load_js_url:
+          type: string
+          label: 'load.js URL'
+        capture_server:
+          type: string
+          label: 'Capture server'
+        enable_sso:
+          type: boolean
+          label: 'Enable SSO'
+        federate_server:
+          type: string
+          label: 'Federate server'
+        federate_segment:
+          type: string
+          label: 'Federate segment'
+        federate_supported_segments:
+          type: string
+          label: 'Federate supported segments'
+    screens:
+      type: mapping
+      label: 'Screens'
+      mapping:
+        folder:
+          type: string
+          label: 'Folder'

@@ -13,18 +13,18 @@ janrain_capture.forgot:
 janrain_capture.simple_logout:
   path: '/janrain_capture/simple_logout' 
   defaults:
-    _controller: '\Drupal\janrain_capture\Controller\SimpleLogoutController::logout' 
+    _controller: '\Drupal\janrain_capture\Controller\SimpleLogoutController::logout'
   requirements:
     _user_is_logged_in: 'TRUE'
 janrain_capture.settings.capture:
   path: '/admin/config/people/janrain-capture/capture-settings'
   defaults:
-    _form: '\Drupal\janrain_capture\Form\JanrainCaptureSettingsForm' 
+    _form: '\Drupal\janrain_capture\Form\JanrainCaptureSettingsForm'
   requirements:
     _permission: 'administer site configuration'
 janrain_capture.settings.screens:
   path: '/admin/config/people/janrain-capture/screens-settings'
   defaults:
-    _form: '\Drupal\janrain_capture\Form\JanrainScreensSettingsForm' 
+    _form: '\Drupal\janrain_capture\Form\JanrainScreensSettingsForm'
   requirements:
     _permission: 'administer site configuration'

@@ -28,7 +28,7 @@ class ScreenLoaderManager {
     'edit-profile',
     'public-profile',
     'forgot',
-    'verify'
+    'verify',
   ];
 
   /**
@@ -46,7 +46,7 @@ class ScreenLoaderManager {
   /**
    * Logger.
    *
-   * @var  \Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   private $logger;
 

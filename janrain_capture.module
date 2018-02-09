@@ -4,6 +4,7 @@
  * @file
  * Janrain Capture module file.
  */
+
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\user\Entity\User;
 
@@ -45,7 +46,7 @@ function janrain_capture_user_view(array &$build, User $entity, EntityViewDispla
   /** @var \Drupal\janrain_capture\JanrainMarkupBuilder $markupBuilder */
   $markupBuilder = \Drupal::service('janrain_capture.markup_builder');
 
-  /** @var \Drupal\janrain_capture\JanrainCaptureApiService $apiService*/
+  /** @var \Drupal\janrain_capture\JanrainCaptureApiService $apiService */
   $apiService = \Drupal::service('janrain_capture.api_service');
 
   if ($apiService->getUserEntity()){

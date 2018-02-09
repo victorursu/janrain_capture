@@ -2,10 +2,10 @@
 
 namespace Drupal\janrain_capture;
 
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
- * @file
  * An API Client for making calls to the Janrain Capture web service.
  */
 class JanrainCaptureApi {
@@ -54,8 +54,10 @@ class JanrainCaptureApi {
    *   API client secret id.
    * @param string $captureAddress
    *   Janrain capture address.
+   * @param \GuzzleHttp\Client $httpClient
+   *   HTTP client.
    */
-  function __construct($clientId, $clientSecret, $captureAddress, $httpClient) {
+  public function __construct($clientId, $clientSecret, $captureAddress, $httpClient) {
     $this->clientId = $clientId;
     $this->clientSecret = $clientSecret;
     $this->captureAddress = $captureAddress;
@@ -75,7 +77,7 @@ class JanrainCaptureApi {
    * @return mixed
    *   The HTTP request result data.
    */
-  protected function call($command, $data = [], $access_token = NULL) {
+  protected function call($command, array $data = [], $access_token = NULL) {
     $url = $this->captureAddress . "/$command";
     $headers = [];
     if (isset($access_token)) {
@@ -91,7 +93,8 @@ class JanrainCaptureApi {
         'headers' => $headers,
         'form_params' => $data,
       ]);
-    } catch (GuzzleException $e) {
+    }
+    catch (GuzzleException $e) {
       $this->logger->error("Exception thrown during API call: @message", ['@message' => $e->getMessage()]);
       return FALSE;
     }
@@ -116,9 +119,9 @@ class JanrainCaptureApi {
    * Perform the exchange to generate and return new Access Token.
    *
    * @param string $auth_code
-   *   The authorization token to use for the exchange
+   *   The authorization token to use for the exchange.
    * @param string $redirect_uri
-   *   The redirect_uri string to match for the exchange
+   *   The redirect_uri string to match for the exchange.
    *
    * @return string
    *   New access token.
@@ -138,12 +141,12 @@ class JanrainCaptureApi {
   }
 
   /**
-   * Retrieves a new access_token/refresh_token set
+   * Retrieves a new access_token/refresh_token set.
    *
-   * @return boolean
+   * @return bool
    *   Boolean success or failure
    */
-  function getRefreshedAccessToken($refresh_token) {
+  public function getRefreshedAccessToken($refresh_token) {
     $command = "oauth/token";
     $data = [
       'refresh_token' => $refresh_token,
@@ -158,7 +161,7 @@ class JanrainCaptureApi {
   }
 
   /**
-   * Retrieves the user entity from Capture
+   * Retrieves the user entity from Capture.
    *
    * @param string $access_token
    *   Access token.

@@ -117,4 +117,5 @@ class JanrainCaptureSettingsForm extends ConfigFormBase {
       ->set('capture.federate_supported_segments', $form_state->getValue('capture')['federate']['federate_supported_segments'])
       ->save();
   }
+
 }

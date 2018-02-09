@@ -14,7 +14,7 @@ class JanrainCaptureApiService {
   /**
    * Janrain Capture API.
    *
-   * @var  \Drupal\janrain_capture\JanrainCaptureApi
+   * @var \Drupal\janrain_capture\JanrainCaptureApi
    */
   private $janrainCaptureAPI;
 
@@ -45,7 +45,7 @@ class JanrainCaptureApiService {
    * Updates session variables with Capture user tokens.
    *
    * @param object $data
-   *   The data received from the HTTP request containing the tokens
+   *   The data received from the HTTP request containing the tokens.
    */
   private function updateCaptureSession($data) {
     $this->tempStore->set('access_token', $data->access_token);
@@ -61,7 +61,7 @@ class JanrainCaptureApiService {
    * @param string $redirect_uri
    *   Redirect Uri.
    *
-   * @return boolean
+   * @return bool
    *   TRUE on success.
    */
   public function newAccessToken($auth_code, $redirect_uri) {
@@ -76,10 +76,10 @@ class JanrainCaptureApiService {
   /**
    * Retrieves a new access_token/refresh_token set.
    *
-   * @return boolean
+   * @return bool
    *   TRUE on success.
    */
-  function refreshAccessToken() {
+  public function refreshAccessToken() {
     $access_token = $this->tempStore->get('access_token');
     $refresh_token = $this->tempStore->get('refresh_token');
     if (empty($access_token)) {
@@ -95,7 +95,7 @@ class JanrainCaptureApiService {
   }
 
   /**
-   * Retrieves the user entity from Capture
+   * Retrieves the user entity from Capture.
    *
    * @return object
    *   User entity from Capture.

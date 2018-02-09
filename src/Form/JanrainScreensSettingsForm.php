@@ -30,12 +30,12 @@ class JanrainScreensSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('janrain_capture.settings');
-    $form['screens_folder'] = array(
+    $form['screens_folder'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Screens Folder'),
       '#description' => $this->t('URL of the Capture screens folder<br/>(examples: file:///sites/all/themes/janrain-capture-screens/, http://example.com/capture-screens/)'),
       '#default_value' => $config->get('screens.folder'),
-    );
+    ];
 
     return $form;
   }
@@ -49,4 +49,5 @@ class JanrainScreensSettingsForm extends ConfigFormBase {
       ->set('screens.folder', $form_state->getValue('screens_folder'))
       ->save();
   }
+
 }

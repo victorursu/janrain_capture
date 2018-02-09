@@ -48,7 +48,7 @@ class JanrainMarkupBuilder {
     global $base_url;
 
     $settings = $this->janrainCaptureSettings->getRawData();
-    unset ($settings['capture']['client_secret']);
+    unset($settings['capture']['client_secret']);
     $settings['capture']['redirect_uri'] = Url::fromRoute('janrain_capture.oauth', [], ['absolute' => TRUE])
       ->toString();
     $settings['capture']['stylesheets'][] = file_create_url($settings['screens']['folder'] . '/stylesheets/janrain.css');

@@ -3,6 +3,7 @@
 namespace Drupal\janrain_capture;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\user\PrivateTempStoreFactory;
 use GuzzleHttp\Client;
 
@@ -30,14 +31,16 @@ class JanrainCaptureApiService {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Configuration factory.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   Logger factory.
    * @param \GuzzleHttp\Client $http_client
    *   Http client.
    * @param \Drupal\user\PrivateTempStoreFactory $temp_store_factory
    *   User temporary store factory.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, Client $http_client, PrivateTempStoreFactory $temp_store_factory) {
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerChannelFactoryInterface $logger_factory, Client $http_client, PrivateTempStoreFactory $temp_store_factory) {
     $config = $config_factory->get('janrain_capture.settings');
-    $this->janrainCaptureAPI = new JanrainCaptureApi($config->get('capture')['client_id'], $config->get('capture')['client_secret'], $config->get('capture')['capture_server'], $http_client);
+    $this->janrainCaptureAPI = new JanrainCaptureApi($config->get('capture')['client_id'], $config->get('capture')['client_secret'], $config->get('capture')['capture_server'], $logger_factory->get('janrain_capture'), $http_client);
     $this->tempStore = $temp_store_factory->get('janrain_capture');
   }
 
@@ -47,10 +50,10 @@ class JanrainCaptureApiService {
    * @param object $data
    *   The data received from the HTTP request containing the tokens.
    */
-  private function updateCaptureSession($data) {
+  public function updateCaptureSession($data) {
     $this->tempStore->set('access_token', $data->access_token);
     $this->tempStore->set('refresh_token', $data->refresh_token);
-    $this->tempStore->set('expires_in', $data->expires_in);
+    $this->tempStore->set('expires_in', REQUEST_TIME + $data->expires_in);
   }
 
   /**
@@ -61,14 +64,14 @@ class JanrainCaptureApiService {
    * @param string $redirect_uri
    *   Redirect Uri.
    *
-   * @return bool
-   *   TRUE on success.
+   * @return object|bool
+   *   Token data on success.
    */
   public function newAccessToken($auth_code, $redirect_uri) {
     $token_info = $this->janrainCaptureAPI->getNewAccessToken($auth_code, $redirect_uri);
     if ($token_info) {
       $this->updateCaptureSession($token_info);
-      return TRUE;
+      return $token_info;
     }
     return FALSE;
   }
@@ -112,7 +115,7 @@ class JanrainCaptureApiService {
     }
     else {
       $user_entity = $this->janrainCaptureAPI->getUserEntity($access_token);
-      if (isset($user_entity['code']) && $user_entity['code'] == '414') {
+      if (isset($user_entity->code) && $user_entity->code == '414') {
         $need_to_refresh = TRUE;
       }
     }

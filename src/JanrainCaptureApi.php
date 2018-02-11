@@ -4,6 +4,7 @@ namespace Drupal\janrain_capture;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Log\LoggerInterface;
 
 /**
  * An API Client for making calls to the Janrain Capture web service.
@@ -54,13 +55,16 @@ class JanrainCaptureApi {
    *   API client secret id.
    * @param string $captureAddress
    *   Janrain capture address.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   Logger object.
    * @param \GuzzleHttp\Client $httpClient
    *   HTTP client.
    */
-  public function __construct($clientId, $clientSecret, $captureAddress, Client $httpClient) {
+  public function __construct($clientId, $clientSecret, $captureAddress,LoggerInterface $logger, Client $httpClient) {
     $this->clientId = $clientId;
     $this->clientSecret = $clientSecret;
     $this->captureAddress = $captureAddress;
+    $this->logger = $logger;
     $this->httpClient = $httpClient;
   }
 

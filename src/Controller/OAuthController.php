@@ -54,7 +54,7 @@ class OAuthController extends ControllerBase {
     $frontpage_url = Url::fromRoute('<front>', [], ['absolute' => TRUE])
       ->toString();
     $code = $request->query->get('code');
-    $this->apiService->newAccessToken($code, $oauth_url);
+    $data = $this->apiService->newAccessToken($code, $oauth_url);
     $user_entity = $this->apiService->getUserEntity();
     $email = $user_entity->result->email;
     $account = user_load_by_mail($email);
@@ -67,6 +67,7 @@ class OAuthController extends ControllerBase {
       $account->save();
     }
     user_login_finalize($account);
+    $this->apiService->updateCaptureSession($data);
 
     return new Response($frontpage_url);
   }

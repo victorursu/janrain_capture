@@ -60,7 +60,7 @@ class JanrainCaptureApi {
    * @param \GuzzleHttp\Client $httpClient
    *   HTTP client.
    */
-  public function __construct($clientId, $clientSecret, $captureAddress,LoggerInterface $logger, Client $httpClient) {
+  public function __construct($clientId, $clientSecret, $captureAddress, LoggerInterface $logger, Client $httpClient) {
     $this->clientId = $clientId;
     $this->clientSecret = $clientSecret;
     $this->captureAddress = $captureAddress;

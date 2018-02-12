@@ -49,9 +49,10 @@ function janrain_capture_user_view(array &$build, User $entity, EntityViewDispla
   /** @var \Drupal\janrain_capture\JanrainCaptureApiService $apiService */
   $apiService = \Drupal::service('janrain_capture.api_service');
 
-  if ($apiService->getUserEntity()) {
+  if ($user_entity = $apiService->getUserEntity()) {
     $build += $markupBuilder->getScreenRenderArray('public-profile');
     $uuid = $entity->getUsername();
+    $build['#user']->setUsername($user_entity->result->email);
     $build['script'] = [
       '#type' => 'html_tag',
       '#tag' => 'script',

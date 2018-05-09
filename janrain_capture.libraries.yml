@@ -2,8 +2,11 @@ janrain_capture:
   version: 1.x
   header: true
   js:
-    janrain-init.js: {preprocess: false}
-    https://d7v0k4dt27zlp.cloudfront.net/assets/capture_client.js: { type: external, minified: true }
+    janrain-init.js:
+      preprocess: false
+    https://d7v0k4dt27zlp.cloudfront.net/assets/capture_client.js:
+      type: external
+      minified: true
   dependencies:
     - core/drupalSettings
     - core/drupal

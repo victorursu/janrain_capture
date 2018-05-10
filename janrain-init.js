@@ -44,7 +44,7 @@ window.janrain = window.janrain || {};
     janrain.ready = true;
   };
 
-  event.initEvent('janrainCaptureLoaded', true, true);
+  event.initEvent('janrainCaptureReady', true, true);
 
   script.id = 'janrainAuthWidget';
   script.src = document.location.protocol + '//' + drupalSettings.janrain.capture.load_js_url;
@@ -59,6 +59,7 @@ window.janrain = window.janrain || {};
   var interval = setInterval(function() {
     if (janrain.hasOwnProperty('capture') && typeof janrain.capture.ui === 'object') {
       clearInterval(interval);
+      janrain.captureReady = true;
       document.dispatchEvent(event);
     }
   }, 500);

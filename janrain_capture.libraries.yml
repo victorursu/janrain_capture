@@ -1,5 +1,4 @@
 janrain_capture:
-  version: 1.x
   header: true
   js:
     janrain-init.js:

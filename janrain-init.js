@@ -59,8 +59,8 @@ window.janrain = window.janrain || {};
   var interval = setInterval(function() {
     if (janrain.hasOwnProperty('capture') && typeof janrain.capture.ui === 'object') {
       clearInterval(interval);
-      janrain.captureReady = true;
       document.dispatchEvent(event);
+      window.janrainCaptureReady = true;
     }
   }, 500);
 

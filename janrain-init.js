@@ -3,6 +3,31 @@ window.janrain = window.janrain || {};
 (function (janrain) {
   'use strict';
 
+  /**
+   * Returns the value of a property in an object.
+   *
+   * @param {Object} object
+   *   The object to check properties at.
+   * @param {Array.<String>} propertiesList
+   *   The list of properties (nested, every next array item is a
+   *   child of an object that stored in the previous property).
+   *
+   * @return {*|undefined}
+   *   The nested or undefined (if no property at one of the levels) value.
+   */
+  function getProperty(object, propertiesList) {
+    for (var i = 0; i < propertiesList.length; i++) {
+      if (object.hasOwnProperty(propertiesList[i])) {
+        object = object[propertiesList[i]];
+      }
+      else {
+        return undefined;
+      }
+    }
+
+    return object;
+  }
+
   janrain.settings = {};
   janrain.settings.capture = {};
 
@@ -57,12 +82,15 @@ window.janrain = window.janrain || {};
   }
 
   var interval = setInterval(function() {
-    if (janrain.hasOwnProperty('capture') && typeof janrain.capture.ui === 'object') {
+    if (
+      getProperty(janrain, ['engage', 'signin', 'status']) === 'loaded' &&
+      typeof getProperty(janrain, ['capture', 'ui']) === 'object'
+    ) {
       clearInterval(interval);
       window.janrainCaptureReady = true;
       document.dispatchEvent(event);
     }
-  }, 500);
+  }, 200);
 
   document.head.appendChild(script);
 })(window.janrain);

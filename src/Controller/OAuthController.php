@@ -42,7 +42,7 @@ class OAuthController extends ControllerBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): self {
     return new static(
       $container->get('janrain_capture.api_service'),
       $container->get('entity_type.manager')
@@ -60,7 +60,7 @@ class OAuthController extends ControllerBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function login(Request $request) {
+  public function login(Request $request): Response {
     $destination = $request->query->has('destination')
       ? Url::fromUserInput($request->query->get('destination'))
       : Url::fromRoute('<front>');

@@ -1,7 +1,7 @@
-janrain_capture:
+janrain_init:
   header: true
   js:
-    janrain-init.js:
+    js/janrain-init.js:
       preprocess: false
     https://d7v0k4dt27zlp.cloudfront.net/assets/capture_client.js:
       type: external

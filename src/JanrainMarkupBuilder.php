@@ -55,7 +55,7 @@ class JanrainMarkupBuilder {
     $settings['capture']['federate_xd_reciever'] = $base_url . base_path() . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html';
     $settings['capture']['federate_logout_uri'] = Url::fromRoute('janrain_capture.simple_logout', ['absolute' => TRUE]);
     $attachments['drupalSettings'] = $settings;
-    $attachments['library'] = 'janrain_capture/janrain_capture';
+    $attachments['library'] = 'janrain_capture/janrain_init';
     return $attachments;
   }
 

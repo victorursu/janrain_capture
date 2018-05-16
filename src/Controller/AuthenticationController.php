@@ -95,11 +95,11 @@ EOF;
     // browser, this controller must show the real HTML page instead of
     // just a URI.
     $response_class = Response::class;
-    $is_reset_password = FALSE;
+    $one_time_login_link = FALSE;
 
     if ($request->query->get('url_type') === 'forgot') {
       $response_class = RedirectResponse::class;
-      $is_reset_password = TRUE;
+      $one_time_login_link = TRUE;
     }
 
     try {
@@ -107,7 +107,7 @@ EOF;
       // will be exposed on the frontend.
       $this->captureApi->authenticate($this->getAuthorizationCode($request), $request->getUri());
 
-      if ($is_reset_password) {
+      if ($one_time_login_link) {
         drupal_set_message($this->t('You have been successfully logged in via one-time login link.'));
       }
     }

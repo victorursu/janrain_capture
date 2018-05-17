@@ -14,6 +14,7 @@ use Drupal\janrain_capture\Exception\JanrainApiCallError;
 use Drupal\janrain_capture\Exception\JanrainUnauthorizedError;
 use Drupal\janrain_capture\Exception\JsonParseError;
 use Drupal\janrain_capture\User\JanrainUserProfile;
+use Drupal\user\UserDataInterface;
 use Drupal\user\UserInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -42,6 +43,12 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
    * @var \Drupal\Core\Session\AccountInterface
    */
   protected $currentUser;
+  /**
+   * An instance of the "user.data" service.
+   *
+   * @var \Drupal\user\UserDataInterface
+   */
+  protected $userData;
   /**
    * An instance of the "module_handler" service.
    *
@@ -87,6 +94,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
   public function __construct(
     Client $http_client,
     AccountInterface $current_user,
+    UserDataInterface $user_data,
     ConfigFactoryInterface $config_factory,
     ModuleHandlerInterface $module_handler,
     KeyValueDatabaseFactory $database_factory,
@@ -102,6 +110,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
     $this->captureAddress = $config['capture_server'] ?? '';
 
     $this->logger = $logger_factory->get('janrain_capture');
+    $this->userData = $user_data;
     $this->dbStorage = $database_factory->get('janrain_capture');
     $this->httpClient = $http_client;
     $this->userStorage = $entity_type_manager->getStorage('user');
@@ -158,6 +167,8 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
       // a correct user account for calls to "getAccessToken()" method in
       // the same request.
       $this->currentUser = $account;
+      // Ensure the user is marked as having a Janrain account.
+      $this->userData->set('janrain_capture', $account->id(), 'janrain_account', TRUE);
       // Inform subscribers about the successful authentication.
       /* @see hook_janrain_capture_user_authenticated() */
       $this->moduleHandler->invokeAll('janrain_capture_user_authenticated', [
@@ -214,15 +225,22 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function isJanrainAccount(UserInterface $account): bool {
+    return (bool) $this->userData->get('janrain_capture', $account->id(), 'janrain_account');
+  }
+
+  /**
    * Returns existing, newly added or updated access token from the database.
    *
    * @param \Drupal\janrain_capture\Authentication\AccessToken|null $access_token
    *   The access token. Can be omitted to read an existing one.
    *
-   * @return \Drupal\janrain_capture\Authentication\AccessToken
+   * @return \Drupal\janrain_capture\Authentication\AccessToken|null
    *   The access token.
    */
-  protected function cache(AccessToken $access_token = NULL): AccessToken {
+  protected function cache(AccessToken $access_token = NULL): ? AccessToken {
     $user_id = $this->currentUser->id();
 
     if ($user_id < 1) {

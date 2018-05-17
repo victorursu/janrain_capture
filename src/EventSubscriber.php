@@ -32,17 +32,27 @@ class EventSubscriber implements EventSubscriberInterface {
 
     // - /user -> \Drupal\user\Controller\user\UserController::userPage()
     // - /user/ID -> \Drupal\Core\Entity\Controller\EntityViewController::view()
-    if ($request->attributes->get('_route') === 'entity.user.canonical' && empty($request->query->get('uuid'))) {
+    if (
+      $request->attributes->get('_route') === 'entity.user.canonical' &&
+      // Redirect to "/user/ID?uuid=UUID" only in case the user has been
+      // created via Janrain API.
+      $request->attributes->get(RouteEnhancer::JANRAIN_ACCOUNT_PROPERTY)
+    ) {
       $user = $request->attributes->get('user');
 
       if ($user instanceof UserInterface) {
-        // The "uuid" GET parameter must be presented in order to allow
-        // Janrain loading the profile.
-        $request->query->set('uuid', $user->uuid());
-        // Override globals to get the correct value from "getUri()".
-        $request->overrideGlobals();
+        $uuid = $user->uuid();
 
-        $event->setResponse(new RedirectResponse($request->getUri(), RedirectResponse::HTTP_MOVED_PERMANENTLY));
+        // Restrict from passing the wrong UUID manually.
+        if ($request->query->get('uuid') !== $uuid) {
+          // The "uuid" GET parameter must be presented in order to allow
+          // Janrain loading the profile.
+          $request->query->set('uuid', $uuid);
+          // Override globals to get the correct value from "getUri()".
+          $request->overrideGlobals();
+
+          $event->setResponse(new RedirectResponse($request->getUri(), RedirectResponse::HTTP_MOVED_PERMANENTLY));
+        }
       }
     }
   }

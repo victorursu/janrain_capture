@@ -71,4 +71,15 @@ interface JanrainCaptureApiInterface {
    */
   public function getUserProfile(): JanrainUserProfile;
 
+  /**
+   * Returns a state whether a user has a Janrain account.
+   *
+   * @param \Drupal\user\UserInterface $account
+   *   The Drupal user.
+   *
+   * @return bool
+   *   The state.
+   */
+  public function isJanrainAccount(UserInterface $account): bool;
+
 }

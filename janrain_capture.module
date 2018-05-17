@@ -49,5 +49,7 @@ function janrain_capture_page_bottom(array &$page_bottom): void {
  * @internal
  */
 function janrain_capture_user_view(array &$build, User $user, EntityViewDisplayInterface $display, $view_mode): void {
-  $build += \Drupal::service('janrain_capture.markup_builder')->getScreenRenderArray('public-profile');
+  if (\Drupal::service('janrain_capture.capture_api')->isJanrainAccount($user)) {
+    $build += \Drupal::service('janrain_capture.markup_builder')->getScreenRenderArray('public-profile');
+  }
 }

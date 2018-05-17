@@ -15,6 +15,7 @@ services:
     arguments:
       - '@http_client'
       - '@current_user'
+      - '@user.data'
       - '@config.factory'
       - '@module_handler'
       - '@keyvalue.database'
@@ -24,3 +25,9 @@ services:
     class: Drupal\janrain_capture\EventSubscriber
     tags:
       - name: event_subscriber
+  janrain_capture.route_enhancer:
+    class: Drupal\janrain_capture\RouteEnhancer
+    arguments:
+      - '@janrain_capture.capture_api'
+    tags:
+      - name: route_enhancer

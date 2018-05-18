@@ -1,36 +1,27 @@
 function janrainCaptureWidgetOnLoad() {
-  var $logout_link = jQuery('a[href="/user/logout"]');
-  $logout_link.addClass('capture_end_session');
+  jQuery('a[href="/user/logout"]').addClass('capture_end_session');
 
   function handleCaptureLogin(result) {
-    console.log ("exchanging code for token...");
-
     jQuery.ajax({
-      url: Drupal.settings.basePath + Drupal.settings.pathPrefix + 'janrain_capture/oauth?code=' + result.authorizationCode,
-      success: function(token) {
-        console.log('code for token exchange completed');
-        window.location.reload();
-      },
-      async: false
+      url: janrain.settings.capture.redirectUri + '?code=' + result.authorizationCode,
+      async: false,
+      success: function(redirect_uri) {
+        window.location.replace(redirect_uri);
+      }
     });
   }
-  janrain.events.onCaptureSessionFound.addHandler(function(result){
-    //console.log ("capture session found");
-  });
 
-  janrain.events.onCaptureSessionNotFound.addHandler(function(result){
-    //console.log ("capture session not found");
-    if (typeof(Backplane) != 'undefined' && typeof(Backplane.getChannelID()) == 'undefined') {
-      //console.log ("reset backplane channel");
+  janrain.events.onCaptureSessionNotFound.addHandler(function() {
+    if (window.hasOwnProperty('Backplane') && Backplane.getChannelID && Backplane.getChannelID()) {
       Backplane.resetCookieChannel();
     }
   });
 
+  janrain.events.onCaptureRegistrationSuccess.addHandler(handleCaptureLogin);
   janrain.events.onCaptureLoginSuccess.addHandler(handleCaptureLogin);
   janrain.events.onCaptureSessionEnded.addHandler(function() {
-    window.location.href = '/user/logout';
+    window.location.replace('/user/logout');
   });
-  janrain.events.onCaptureRegistrationSuccess.addHandler(handleCaptureLogin);
 
   janrain.capture.ui.start();
 }

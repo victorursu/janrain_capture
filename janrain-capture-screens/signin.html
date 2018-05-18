@@ -2,18 +2,6 @@
 // set the flow name for this screen here
 janrain.settings.capture.flowName = 'plugins';
 janrain.settings.width = 310;
-
-// call our code/token exchanger, and use the token to set up a capture session
-function getTokenForCode(code, redirect_uri) {
-    var url;
-    url = janrain.settings.capture.redirectUri;
-    if (url.indexOf('?') == -1) {
-        url += "?code=" + code;
-    } else {
-        url += "&code=" + code;
-    }
-    window.location.href = url;
-}
 </script>
 <div style="display:none;" id="signIn">
     <div class="capture_header">

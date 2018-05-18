@@ -28,19 +28,18 @@ window.janrain = window.janrain || {};
     return object;
   }
 
-  janrain.settings = {};
-  janrain.settings.capture = {};
+  janrain.settings = janrain.settings || {};
+  janrain.settings.capture = janrain.settings.capture || {};
 
   janrain.settings.appUrl = drupalSettings.janrain.app_url;
-  janrain.settings.capture.captureServer = drupalSettings.janrain.capture.capture_server;
-  janrain.settings.capture.appId = drupalSettings.janrain.capture.app_id;
-  janrain.settings.capture.clientId = drupalSettings.janrain.capture.client_id;
-
-  // --- Engage Widget Settings ----------------------------------------------
   janrain.settings.language = drupalSettings.path.currentLanguage;
-  janrain.settings.tokenUrl = janrain.settings.capture.captureServer;
+  janrain.settings.tokenUrl = drupalSettings.janrain.capture.capture_server;
+  janrain.settings.providers = drupalSettings.janrain.capture.providers;
 
   // --- Capture Widget Settings ---------------------------------------------
+  janrain.settings.capture.appId = drupalSettings.janrain.capture.app_id;
+  janrain.settings.capture.clientId = drupalSettings.janrain.capture.client_id;
+  janrain.settings.capture.captureServer = drupalSettings.janrain.capture.capture_server;
   janrain.settings.capture.language = drupalSettings.path.currentLanguage;
   janrain.settings.capture.redirectUri = drupalSettings.janrain.capture.redirect_uri;
   janrain.settings.capture.setProfileCookie = true;

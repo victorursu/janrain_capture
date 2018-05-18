@@ -11,6 +11,46 @@ use Drupal\Core\Form\FormStateInterface;
 class JanrainCaptureSettingsForm extends ConfigFormBase {
 
   /**
+   * The list of identity providers for social login.
+   */
+  protected const SOCIAL_IDENTITY_PROVIDERS = [
+    'amazon' => 'Amazon',
+    'aol' => 'AOL',
+    'blogger' => 'Blogger',
+    'disqus' => 'Disqus',
+    'doccheck' => 'DocCheck',
+    'doximity' => 'Doximity',
+    'facebook' => 'Facebook',
+    'flickr' => 'Flickr',
+    'fimnet' => 'Fimnet',
+    'foursquare' => 'Foursquare',
+    'googleplus' => 'Google+',
+    'instagram' => 'Instagram',
+    'linkedin' => 'LinkedIn',
+    'livejournal' => 'LiveJournal',
+    'medikey' => 'MediKey',
+    'medy' => 'Medy',
+    'microsoftaccount' => 'Microsoft Account',
+    'mixi' => 'Mixi',
+    'mydigipass' => 'MYDIGIPASS.COM',
+    'odnoklassniki' => 'Odnoklassniki',
+    'onekey' => 'OneKey',
+    'openid' => 'OpenID',
+    'paypal' => 'PayPal',
+    'qq' => 'QQ',
+    'renren' => 'Renren',
+    'salesforce' => 'Salesforce',
+    'sina weibo' => 'Sina Weibo',
+    'soundcloud' => 'SoundCloud',
+    'tumblr' => 'Tumblr',
+    'twitter' => 'Twitter',
+    'vk' => 'VK',
+    'wechat' => 'WeChat',
+    'xing' => 'Xing',
+    'yahoo' => 'Yahoo!',
+  ];
+
+  /**
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
@@ -30,6 +70,7 @@ class JanrainCaptureSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('janrain_capture.settings');
+
     $form['capture'] = [
       '#type' => 'fieldset',
       '#tree' => TRUE,
@@ -65,7 +106,21 @@ class JanrainCaptureSettingsForm extends ConfigFormBase {
       '#description' => $this->t('The URL of the server hosting the Registration application.For example, https://myapp.janraincapture.com.'),
       '#default_value' => $config->get('capture.capture_server'),
     ];
-
+    $form['capture']['providers'] = [
+      '#type' => 'details',
+      '#open' => FALSE,
+      '#title' => $this->t('Social login'),
+      '#collapsible' => TRUE,
+      '#description' => $this->t('Social login enables users to register on your web site by using an account created with a third-party identity provider (IDP). Read more in the <a href="@documentation">official documentation</a>.', [
+        '@documentation' => 'https://docs.janrain.com/social/identity-providers',
+      ]),
+    ];
+    $form['capture']['providers']['list'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Identity providers'),
+      '#options' => static::SOCIAL_IDENTITY_PROVIDERS,
+      '#default_value' => $config->get('capture.providers'),
+    ];
     $form['capture']['federate'] = [
       '#type' => 'details',
       '#title' => $this->t('Federate Settings (optional)'),
@@ -105,16 +160,20 @@ class JanrainCaptureSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
+
+    $capture = $form_state->getValue('capture');
+
     $this->configFactory->getEditable('janrain_capture.settings')
-      ->set('capture.app_id', $form_state->getValue('capture')['app_id'])
-      ->set('capture.client_id', $form_state->getValue('capture')['client_id'])
-      ->set('capture.client_secret', $form_state->getValue('capture')['client_secret'])
-      ->set('capture.load_js_url', $form_state->getValue('capture')['load_js_url'])
-      ->set('capture.capture_server', $form_state->getValue('capture')['capture_server'])
-      ->set('capture.enable_sso', $form_state->getValue('capture')['federate']['enable_sso'])
-      ->set('capture.federate_server', $form_state->getValue('capture')['federate']['federate_server'])
-      ->set('capture.federate_segment', $form_state->getValue('capture')['federate']['federate_segment'])
-      ->set('capture.federate_supported_segments', $form_state->getValue('capture')['federate']['federate_supported_segments'])
+      ->set('capture.app_id', $capture['app_id'])
+      ->set('capture.client_id', $capture['client_id'])
+      ->set('capture.client_secret', $capture['client_secret'])
+      ->set('capture.load_js_url', $capture['load_js_url'])
+      ->set('capture.providers', array_keys(array_filter($capture['providers']['list'])))
+      ->set('capture.capture_server', $capture['capture_server'])
+      ->set('capture.enable_sso', $capture['federate']['enable_sso'])
+      ->set('capture.federate_server', $capture['federate']['federate_server'])
+      ->set('capture.federate_segment', $capture['federate']['federate_segment'])
+      ->set('capture.federate_supported_segments', $capture['federate']['federate_supported_segments'])
       ->save();
   }
 

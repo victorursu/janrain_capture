@@ -49,7 +49,8 @@ class JanrainMarkupBuilder {
 
     $settings = $this->janrainCaptureSettings->getRawData();
     unset($settings['capture']['client_secret']);
-    $settings['capture']['redirect_uri'] = Url::fromRoute('janrain_capture.oauth', [], ['absolute' => TRUE])
+    $settings['capture']['redirect_uri'] = Url::fromRoute('janrain_capture.oauth')
+      ->setAbsolute()
       ->toString();
     $settings['capture']['stylesheets'][] = file_create_url($settings['screens']['folder'] . '/stylesheets/janrain.css');
     $settings['capture']['federate_xd_reciever'] = $base_url . base_path() . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html';

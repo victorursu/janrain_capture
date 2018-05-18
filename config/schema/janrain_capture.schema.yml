@@ -18,6 +18,12 @@ janrain_capture.settings:
         load_js_url:
           type: string
           label: 'load.js URL'
+        providers:
+          type: sequence
+          label: 'Identity providers'
+          sequence:
+            type: string
+            label: 'Provider ID'
         capture_server:
           type: string
           label: 'Capture server'

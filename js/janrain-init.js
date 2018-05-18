@@ -34,6 +34,7 @@ window.janrain = window.janrain || {};
   janrain.settings.appUrl = drupalSettings.janrain.app_url;
   janrain.settings.language = drupalSettings.path.currentLanguage;
   janrain.settings.tokenUrl = drupalSettings.janrain.capture.capture_server;
+  /** @link https://docs.janrain.com/social/login-javascript-api/#providers */
   janrain.settings.providers = drupalSettings.janrain.capture.providers;
 
   // --- Capture Widget Settings ---------------------------------------------

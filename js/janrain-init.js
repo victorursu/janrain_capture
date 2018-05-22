@@ -57,6 +57,8 @@ window.janrain = window.janrain || {};
     janrain.settings.capture.federateEnableSafari = true;
   }
 
+  // These settings are used by screens.
+  // @todo Consider modifying screens to use global "janrain" object.
   Drupal.settings = {};
   Drupal.settings.basePath = drupalSettings.path.baseUrl;
   Drupal.settings.pathPrefix = drupalSettings.path.pathPrefix;

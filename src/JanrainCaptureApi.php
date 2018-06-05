@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\KeyValueStore\KeyValueDatabaseFactory;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\janrain_capture\Authentication\AccessToken;
 use Drupal\janrain_capture\Authentication\RefreshToken;
 use Drupal\janrain_capture\Exception\JanrainApiCallError;
@@ -40,7 +40,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
   /**
    * An instance of the "current_user" service.
    *
-   * @var \Drupal\Core\Session\AccountInterface
+   * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $currentUser;
   /**
@@ -93,7 +93,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
    */
   public function __construct(
     Client $http_client,
-    AccountInterface $current_user,
+    AccountProxyInterface $current_user,
     UserDataInterface $user_data,
     ConfigFactoryInterface $config_factory,
     ModuleHandlerInterface $module_handler,
@@ -125,7 +125,6 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
     $token = $this->getToken(static::GRANT_TYPE_AUTHORIZATION_CODE, [
       'code' => $auth_code,
       'redirect_uri' => $redirect_uri,
-      // 'redirect_uri' => 'https://pfpfprodk-dev.pfizersite.io/janrain_capture/oauth?url_type=forgot',
     ]);
 
     // Ideally, this method must not throw any exceptions here since
@@ -133,50 +132,49 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
     // untrue a user does not exist in Janrain.
     $profile = $this->getEntity($token);
     $email = $profile->getEmail();
+    // The UUID in Drupal and on Janrain should be the same.
+    $uuid = $profile->getUuid();
+    // Check whether our application already knows a user.
+    $accounts = $this->userStorage
+      ->getQuery('OR')
+      ->condition('uuid', $uuid)
+      ->condition('mail', $email)
+      ->execute();
 
-    // The user is already logged in to Drupal.
-    if ($email === $this->currentUser->getEmail()) {
-      // Return current account later, after storing to cache the newly
-      // received token.
-      $account = $this->currentUser;
+    // This part will never be reached if a user doesn't exist on Janrain.
+    if (empty($accounts)) {
+      $is_new = TRUE;
+      $account = $this->userStorage->create([
+        'uuid' => $uuid,
+        // The username must be unique as well as email and UUID.
+        'name' => $email,
+        'mail' => $email,
+        'status' => TRUE,
+      ]);
+
+      $this->userStorage->save($account);
     }
     else {
-      // Check whether our application already knows that user.
-      $accounts = $this->userStorage->loadByProperties(['mail' => $email]);
-
-      // This part will never be reached if a user doesn't exist on Janrain.
-      if (empty($accounts)) {
-        $is_new = TRUE;
-        $account = $this->userStorage->create([
-          'uuid' => $profile->getUuid(),
-          'name' => $profile->getUsername(),
-          'mail' => $email,
-          'status' => TRUE,
-        ]);
-
-        $this->userStorage->save($account);
-      }
-      else {
-        $is_new = FALSE;
-        $account = reset($accounts);
-      }
-
-      user_login_finalize($account);
-
-      // Update the current user account in memory. This needed to provide
-      // a correct user account for calls to "getAccessToken()" method in
-      // the same request.
-      $this->currentUser = $account;
-      // Ensure the user is marked as having a Janrain account.
-      $this->userData->set('janrain_capture', $account->id(), 'janrain_account', TRUE);
-      // Inform subscribers about the successful authentication.
-      /* @see hook_janrain_capture_user_authenticated() */
-      $this->moduleHandler->invokeAll('janrain_capture_user_authenticated', [
-        $profile,
-        $account,
-        $is_new,
-      ]);
+      $is_new = FALSE;
+      /* @var \Drupal\user\UserInterface $account */
+      $account = $this->userStorage->load(reset($accounts));
     }
+
+    user_login_finalize($account);
+
+    // Update the current user account in memory. This needed to provide
+    // a correct user account for calls to "getAccessToken()" method in
+    // the same request.
+    $this->currentUser = $account;
+    // Ensure the user is marked as having a Janrain account.
+    $this->userData->set('janrain_capture', $account->id(), 'janrain_username', $profile->getUsername());
+    // Inform subscribers about the successful authentication.
+    /* @see hook_janrain_capture_user_authenticated() */
+    $this->moduleHandler->invokeAll('janrain_capture_user_authenticated', [
+      $profile,
+      $account,
+      $is_new,
+    ]);
 
     // Save the token to the database.
     $this->cache($token);
@@ -228,7 +226,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
    * {@inheritdoc}
    */
   public function isJanrainAccount(UserInterface $account): bool {
-    return (bool) $this->userData->get('janrain_capture', $account->id(), 'janrain_account');
+    return (bool) $this->userData->get('janrain_capture', $account->id(), 'janrain_username');
   }
 
   /**

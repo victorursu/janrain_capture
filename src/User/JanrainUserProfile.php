@@ -5,45 +5,17 @@ namespace Drupal\janrain_capture\User;
 /**
  * The user profile on Janrain.
  */
-class JanrainUserProfile {
-
-  /**
-   * The profile's data.
-   *
-   * @var \stdClass
-   */
-  protected $data;
+class JanrainUserProfile extends JanrainDataContainer {
 
   /**
    * {@inheritdoc}
    */
   public function __construct(\stdClass $data) {
-    $this->data = $data;
-
-    if (!isset($this->uuid, $this->email)) {
+    if (!isset($data->uuid, $data->email)) {
       throw new \InvalidArgumentException('An invalid user profile is given.');
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __isset($name): bool {
-    return property_exists($this->data, $name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __get($name) {
-    return $this->data->{$name};
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __unset($name): void {
-    unset($this->data->{$name});
+    parent::__construct($data);
   }
 
   /**
@@ -58,6 +30,75 @@ class JanrainUserProfile {
    */
   public function getUuid(): string {
     return $this->data->uuid;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getBirthDate(): ? \DateTime {
+    return isset($this->data->birthday) ? new \DateTime($this->data->birthday) : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPhoneMobileNumber(): string {
+    return $this->getPhoneNumber('mobile');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPhoneWorkNumber(): string {
+    return $this->getPhoneNumber('work');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPhoneHomeNumber(): string {
+    return $this->getPhoneNumber('home');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPhoneFaxNumber(): string {
+    return $this->getPhoneNumber('fax');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPrimaryAddress(): JanrainUserAddress {
+    return new JanrainUserAddress($this->data->primaryAddress);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getHomeAddress(): JanrainUserAddress {
+    return new JanrainUserAddress($this->data->homeAddress);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMailingAddress(): JanrainUserAddress {
+    return new JanrainUserAddress($this->data->mailingAddress);
+  }
+
+  /**
+   * Returns a phone number by the type.
+   *
+   * @param string $type
+   *   Available types: "home", "fax", "work" and "mobile".
+   *
+   * @return string
+   *   The phone number.
+   */
+  protected function getPhoneNumber($type = 'mobile'): string {
+    return isset($this->data->phoneNumber->{$type}) ? (string) $this->data->phoneNumber->{$type} : '';
   }
 
   /**

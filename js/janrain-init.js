@@ -51,9 +51,12 @@ window.janrain = window.janrain || {};
   // --- Federate ------------------------------------------------------------
   if (drupalSettings.janrain.capture.enable_sso) {
     janrain.settings.capture.federate = true;
-    janrain.settings.capture.federateServer = drupalSettings.janrain.capture.federate_server;
+    janrain.settings.capture.federateServer = 'https://' + drupalSettings.janrain.capture.federate_server;
     janrain.settings.capture.federateXdReceiver = drupalSettings.janrain.capture.federate_xd_reciever;
     janrain.settings.capture.federateLogoutUri = drupalSettings.janrain.capture.federate_logout_uri;
+    janrain.settings.capture.federateSegment = drupalSettings.janrain.capture.federate_segment;
+    // @todo Investigate docs for more info about federateSupportedSegments.
+    // janrain.settings.capture.federateSupportedSegments = drupalSettings.janrain.capture.federate_supported_segments;
     janrain.settings.capture.federateEnableSafari = true;
   }
 

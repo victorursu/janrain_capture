@@ -121,6 +121,18 @@ class JanrainCaptureSettingsForm extends ConfigFormBase {
       '#options' => static::SOCIAL_IDENTITY_PROVIDERS,
       '#default_value' => $config->get('capture.providers'),
     ];
+    $form['capture']['engage'] = [
+      '#type' => 'details',
+      '#open' => FALSE,
+      '#title' => $this->t('Engage Settings (optional)'),
+      '#collapsible' => TRUE,
+    ];
+    $form['capture']['engage']['app_url'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Engage App URL'),
+      '#description' => $this->t('The URL of the Janrain Engage Single Sign-on server. For example, myapp.rpxnow.com.'),
+      '#default_value' => $config->get('capture.app_url'),
+    ];
     $form['capture']['federate'] = [
       '#type' => 'details',
       '#title' => $this->t('Federate Settings (optional)'),
@@ -170,6 +182,7 @@ class JanrainCaptureSettingsForm extends ConfigFormBase {
       ->set('capture.load_js_url', $capture['load_js_url'])
       ->set('capture.providers', array_keys(array_filter($capture['providers']['list'])))
       ->set('capture.capture_server', $capture['capture_server'])
+      ->set('capture.app_url', $capture['engage']['app_url'])
       ->set('capture.enable_sso', $capture['federate']['enable_sso'])
       ->set('capture.federate_server', $capture['federate']['federate_server'])
       ->set('capture.federate_segment', $capture['federate']['federate_segment'])

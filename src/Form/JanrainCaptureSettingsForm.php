@@ -133,6 +133,12 @@ class JanrainCaptureSettingsForm extends ConfigFormBase {
       '#description' => $this->t('The URL of the Janrain Engage Single Sign-on server. For example, myapp.rpxnow.com.'),
       '#default_value' => $config->get('capture.app_url'),
     ];
+    $form['capture']['engage']['token_action'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Engage Token Action'),
+      '#description' => $this->t('The Token Action of the Janrain Engage Single Sign-on server. For example, "event".'),
+      '#default_value' => $config->get('capture.token_action'),
+    ];
     $form['capture']['federate'] = [
       '#type' => 'details',
       '#title' => $this->t('Federate Settings (optional)'),
@@ -183,6 +189,7 @@ class JanrainCaptureSettingsForm extends ConfigFormBase {
       ->set('capture.providers', array_keys(array_filter($capture['providers']['list'])))
       ->set('capture.capture_server', $capture['capture_server'])
       ->set('capture.app_url', $capture['engage']['app_url'])
+      ->set('capture.token_action', $capture['engage']['token_action'])
       ->set('capture.enable_sso', $capture['federate']['enable_sso'])
       ->set('capture.federate_server', $capture['federate']['federate_server'])
       ->set('capture.federate_segment', $capture['federate']['federate_segment'])

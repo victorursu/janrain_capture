@@ -5,8 +5,7 @@
  * Janrain Capture.
  */
 
-use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
-use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 
 /**
  * Implements hook_cron().
@@ -28,10 +27,7 @@ function janrain_capture_cron(): void {
  * @internal
  */
 function janrain_capture_page_attachments(array &$attachments): void {
-  $attachment = \Drupal::service('janrain_capture.markup_builder')->getPageAttachment();
-
-  $attachments['#attached']['library'][] = $attachment['library'];
-  $attachments['#attached']['drupalSettings']['janrain'] = $attachment['drupalSettings'];
+  $attachments['#attached'] = array_merge_recursive($attachments['#attached'], \Drupal::service('janrain_capture.markup_builder')->getPageAttachment());
 }
 
 /**
@@ -48,7 +44,7 @@ function janrain_capture_page_bottom(array &$page_bottom): void {
  *
  * @internal
  */
-function janrain_capture_user_view(array &$build, User $user, EntityViewDisplayInterface $display, $view_mode): void {
+function janrain_capture_user_view(array &$build, UserInterface $user): void {
   if (\Drupal::service('janrain_capture.capture_api')->isJanrainAccount($user)) {
     $build += \Drupal::service('janrain_capture.markup_builder')->getScreenRenderArray('public-profile');
   }

@@ -16,14 +16,14 @@ class JanrainMarkupBuilder {
    *
    * @var \Drupal\janrain_capture\ScreenLoaderManager
    */
-  private $screenLoaderManager;
+  protected $screenLoaderManager;
 
   /**
    * Janrain Capture settings.
    *
    * @var \Drupal\Core\Config\ImmutableConfig
    */
-  private $janrainCaptureSettings;
+  protected $janrainCaptureSettings;
 
   /**
    * JanrainMarkupBuilder constructor.
@@ -44,33 +44,34 @@ class JanrainMarkupBuilder {
    * @return array
    *   Attachment array.
    */
-  public function getPageAttachment() {
-    global $base_url;
-
+  public function getPageAttachment(): array {
+    global $base_url, $base_path;
     $settings = $this->janrainCaptureSettings->getRawData();
     unset($settings['capture']['client_secret']);
-    $settings['capture']['redirect_uri'] = Url::fromRoute('janrain_capture.oauth')
-      ->setAbsolute()
-      ->toString();
-    $settings['capture']['stylesheets'][] = file_create_url($settings['screens']['folder'] . '/stylesheets/janrain.css');
-
+    foreach ([
+      'redirect_uri' => 'janrain_capture.oauth',
+      'federate_logout_uri' => 'janrain_capture.simple_logout',
+    ] as $setting => $route) {
+      $settings['capture'][$setting] = Url::fromRoute($route)
+        ->setAbsolute()
+        ->toString();
+    }
     // Federate.
-    $settings['capture']['federate_xd_reciever'] = $base_url . base_path() . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html';
-    $settings['capture']['federate_logout_uri'] = Url::fromRoute('janrain_capture.simple_logout', [], ['absolute' => TRUE]);
-
-    // Just one-to-one port.
+    $settings['capture']['federate_xd_reciever'] = $base_url . $base_path . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html';
+    $settings['capture']['stylesheets'][] = file_create_url($settings['screens']['folder'] . '/stylesheets/janrain.css');
     // @todo Investigate docs for more info about federateSupportedSegments.
     if (isset($settings['capture']['federate_supported_segments'])) {
-      $segment_names = explode(',', $settings['capture']['federate_supported_segments']);
-
-      if ($segment_names) {
-        $settings['capture']['federate_supported_segments'] = json_encode($segment_names);
-      }
+      $settings['capture']['federate_supported_segments'] = json_encode(explode(',', $settings['capture']['federate_supported_segments']));
     }
-
-    $attachments['drupalSettings'] = $settings;
-    $attachments['library'] = 'janrain_capture/janrain_init';
-    return $attachments;
+    return [
+      'library' => [
+        'janrain_capture/janrain_init',
+      ],
+      'drupalSettings' => [
+        'janrain' => $settings,
+        'acquia_env' => $_ENV['AH_SITE_ENVIRONMENT'] ?? 'local',
+      ],
+    ];
   }
 
   /**
@@ -82,18 +83,18 @@ class JanrainMarkupBuilder {
    * @return array
    *   Janrain screen render array.
    */
-  public function getScreenRenderArray($name) {
-    $screen_html = $this->screenLoaderManager->getScreen($name, 'html');
-    $screen_js = $this->screenLoaderManager->getScreen($name, 'js');
+  public function getScreenRenderArray(string $name): array {
+    $build = [];
 
     $build["{$name}_screen_html"] = [
       '#markup' => '',
-      '#children' => $screen_html,
+      '#children' => $this->screenLoaderManager->getScreen($name, 'html'),
     ];
+
     $build["{$name}_screen_js"] = [
-      '#type' => 'html_tag',
       '#tag' => 'script',
-      '#value' => Markup::create($screen_js),
+      '#type' => 'html_tag',
+      '#value' => Markup::create($this->screenLoaderManager->getScreen($name, 'js')),
     ];
 
     return $build;

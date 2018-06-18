@@ -46,7 +46,10 @@ class JanrainMarkupBuilder {
    */
   public function getPageAttachment(): array {
     global $base_url, $base_path;
-    $settings = $this->janrainCaptureSettings->getRawData();
+
+    // Load entire configuration data array with overrides to allow
+    // per-environment configuration using settings.[ENV].php.
+    $settings = $this->janrainCaptureSettings->get();
     unset($settings['capture']['client_secret']);
     foreach ([
       'redirect_uri' => 'janrain_capture.oauth',

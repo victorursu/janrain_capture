@@ -9,7 +9,7 @@ janrain_capture.forgot:
   defaults:
     _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::forgot'
   requirements:
-    _user_is_logged_in: 'FALSE'
+        _access: 'TRUE'
 janrain_capture.simple_logout:
   path: '/janrain_capture/logout'
   defaults:

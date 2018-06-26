@@ -15,7 +15,7 @@ janrain_capture.simple_logout:
   defaults:
     _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::logout'
   requirements:
-    _user_is_logged_in: 'TRUE'
+      _access: 'TRUE'
 janrain_capture.settings.capture:
   path: '/admin/config/people/janrain-capture/capture-settings'
   defaults:

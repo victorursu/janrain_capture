@@ -27,11 +27,9 @@ function janrain_capture_cron(): void {
  * @internal
  */
 function janrain_capture_page_attachments(array &$attachments): void {
-  $attachments['#attached'] = array_merge_recursive($attachments['#attached'], \Drupal::service('janrain_capture.markup_builder')->getPageAttachment());
-  // We throw the token in signin.js.
-  if (isset($_SESSION['janrain']['capture']['access_token'])) {
-    $attachments['#attached']['drupalSettings']['janrain']['access_token'] = $_SESSION['janrain']['capture']['access_token'];
-  }
+  $janrain_capture_markup_builder = \Drupal::service('janrain_capture.markup_builder')->getPageAttachment();
+  $janrain_capture_markup_builder['drupalSettings']['janrain']['access_token'] = $_SESSION['janrain']['capture']['access_token'];
+  $attachments['#attached'] = array_merge_recursive($attachments['#attached'], $janrain_capture_markup_builder);
 }
 
 /**

@@ -95,10 +95,8 @@ EOF;
     // a user will receive an email with the link and, opening it in a
     // browser, this controller must show the real HTML page instead of
     // just a URI.
-    $response_class = Response::class;
-
     $response_url = $this->getDestinationUrl($request);
-
+    $response_class = Response::class;
     $authorization_code = NULL;
 
     try {
@@ -108,19 +106,18 @@ EOF;
       $this->captureApi->authenticate($authorization_code, $request->getUri());
 
       if ($request->query->get('url_type') === 'forgot') {
-        $access_token = $this->captureApi->getAccessToken();
+        $access_token = $this->captureApi->getAccessToken()->getToken();
 
         // Added token for not caching page.
         $response_url->setRouteParameters([
           'changePassword' => 'yes',
-          'token' => Html::getUniqueId($access_token->getToken()),
+          'token' => Html::getUniqueId($access_token),
         ]);
 
-        $_SESSION['janrain']['capture']['access_token'] = $access_token->getToken();
+        $_SESSION['janrain']['capture']['access_token'] = $access_token;
 
         $response_class = RedirectResponse::class;
       }
-
     }
     catch (\Throwable $e) {
       // If code not verified.

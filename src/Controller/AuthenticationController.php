@@ -2,6 +2,7 @@
 
 namespace Drupal\janrain_capture\Controller;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use Drupal\janrain_capture\JanrainCaptureApi;
@@ -95,27 +96,55 @@ EOF;
     // browser, this controller must show the real HTML page instead of
     // just a URI.
     $response_class = Response::class;
-    $one_time_login_link = FALSE;
 
-    if ($request->query->get('url_type') === 'forgot') {
-      $response_class = RedirectResponse::class;
-      $one_time_login_link = TRUE;
-    }
+    $response_url = $this->getDestinationUrl($request);
+
+    $authorization_code = NULL;
 
     try {
+      $authorization_code = $this->getAuthorizationCode($request);
       // The authentication can throw exceptions so their messages
       // will be exposed on the frontend.
-      $this->captureApi->authenticate($this->getAuthorizationCode($request), $request->getUri());
+      $this->captureApi->authenticate($authorization_code, $request->getUri());
 
-      if ($one_time_login_link) {
-        drupal_set_message($this->t('You have been successfully logged in via one-time login link.'));
+      if ($request->query->get('url_type') === 'forgot') {
+        $access_token = $this->captureApi->getAccessToken();
+
+        // Added token for not caching page.
+        $response_url->setRouteParameters([
+          'changePassword' => 'yes',
+          'token' => Html::getUniqueId($access_token->getToken()),
+        ]);
+
+        $_SESSION['janrain']['capture']['access_token'] = $access_token->getToken();
+
+        $response_class = RedirectResponse::class;
       }
+
     }
     catch (\Throwable $e) {
-      drupal_set_message($e->getMessage(), 'error');
+      // If code not verified.
+      if ($request->query->get('url_type') === 'forgot'
+        && !($e instanceof BadRequestHttpException)
+      ) {
+        $response_url->setRouteParameters([
+          'changePassword' => 'no',
+          'code' => $authorization_code,
+        ]);
+        $response_class = RedirectResponse::class;
+      }
+      else {
+        drupal_set_message($e->getMessage(), 'error');
+      }
+
+      unset($_SESSION['janrain']['capture']['access_token']);
     }
 
-    return new $response_class($this->getDestinationUrl($request)->setAbsolute()->toString());
+    if ($response_class === Response::class) {
+      unset($_SESSION['janrain']['capture']['access_token']);
+    }
+
+    return new $response_class($response_url->setAbsolute()->toString());
   }
 
   /**

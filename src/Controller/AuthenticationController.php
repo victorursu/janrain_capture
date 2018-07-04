@@ -95,41 +95,55 @@ EOF;
     // browser, this controller must show the real HTML page instead of
     // just a URI.
     $response_class = Response::class;
-    $one_time_login_link = FALSE;
-
-    if ($request->query->get('url_type') === 'forgot') {
-      $response_class = RedirectResponse::class;
-      $one_time_login_link = TRUE;
-    }
-
-    try {
-      // The authentication can throw exceptions so their messages
-      // will be exposed on the frontend.
-      $this->captureApi->authenticate($this->getAuthorizationCode($request), $request->getUri());
-    }
-    catch (\Throwable $e) {
-      drupal_set_message($e->getMessage(), 'error');
-    }
-
+    // Read (and remove) authorization code from the request.
+    $authorization_code = $this->getAuthorizationCode($request);
     // Form destination URL here since the "$request" is modified above.
-    $response_url = $this->getDestinationUrl($request);
+    $destination_url = $this->getDestinationUrl($request);
 
-    // A user has used a one-time login link.
-    if ($one_time_login_link) {
-      // And the request ended with an error.
-      if (isset($e)) {
-        $response_url->setRouteParameter('changePassword', 'no');
+    // No authorization code - no further logic.
+    if ($authorization_code === NULL) {
+      drupal_set_message($this->t('Malformed request. Authorization code is missing.'), 'error');
+    }
+    else {
+      try {
+        // The authentication can throw exceptions so their messages
+        // will be exposed on the frontend.
+        $this->captureApi->authenticate($authorization_code, $request->getUri());
       }
-      else {
-        drupal_set_message($this->t('You have been successfully logged in via one-time login link.'));
+      catch (\Throwable $e) {
+        drupal_set_message($e->getMessage(), 'error');
+      }
 
-        // @todo Shouldn't we care about not exposing this value on a frontned?
-        $response_url->setRouteParameter('token', $this->captureApi->getAccessToken()->getToken());
-        $response_url->setRouteParameter('changePassword', 'yes');
+      // A user has used a one-time login link.
+      if ($request->get('url_type') === 'forgot') {
+        // Now we're going to redirect a user to the previous location (front
+        // page if missing).
+        $response_class = RedirectResponse::class;
+
+        // The authentication request ended with an error.
+        if (isset($e)) {
+          // Add the "code" to the URL since it's expected by the external,
+          // third-party script (check for the "no code supplied" error).
+          /* @example script */
+          /* @link https://d29usylhdk1xyu.cloudfront.net/manifest/login?version=release%2F1.117.4_widgets_1136 */
+          $destination_url->setRouteParameter('code', $authorization_code);
+          // This parameter is here for recognizing the custom action that
+          // potentially can be taken on the frontend.
+          $destination_url->setRouteParameter('changePassword', 'no');
+        }
+        else {
+          drupal_set_message($this->t('You have been successfully logged in via one-time login link.'));
+
+          // The token goes to a frontend for initializing the password reset
+          // session.
+          // @todo Shouldn't we care about not exposing this value on a frontned?
+          $destination_url->setRouteParameter('token', $this->captureApi->getAccessToken()->getToken());
+          $destination_url->setRouteParameter('changePassword', 'yes');
+        }
       }
     }
 
-    return new $response_class($response_url->setAbsolute()->toString());
+    return new $response_class($destination_url->setAbsolute()->toString());
   }
 
   /**
@@ -138,16 +152,17 @@ EOF;
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request.
    *
-   * @return string
-   *   The OAuth authorization code.
+   * @return string|null
+   *   The OAuth authorization code or NULL when the code is not presented
+   *   in the request's GET query.
    */
   protected function getAuthorizationCode(Request $request): string {
     // If the request has no "code" it means it's malformed.
     if (!$request->query->has('code')) {
-      throw new BadRequestHttpException($this->t('Malformed request. Authorization code is missing.'));
+      return NULL;
     }
 
-    $code = $request->query->get('code');
+    $code = trim($request->query->get('code'));
 
     // The code must be read first and then removed from the request. This
     // is required for an operation, for instance, for resetting the password.
@@ -162,7 +177,7 @@ EOF;
     $request->overrideGlobals();
 
     // Return ejected value.
-    return $code;
+    return $code ?: NULL;
   }
 
   /**

@@ -2,7 +2,6 @@
 
 namespace Drupal\janrain_capture\Controller;
 
-use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use Drupal\janrain_capture\JanrainCaptureApi;
@@ -95,50 +94,39 @@ EOF;
     // a user will receive an email with the link and, opening it in a
     // browser, this controller must show the real HTML page instead of
     // just a URI.
-    $response_url = $this->getDestinationUrl($request);
     $response_class = Response::class;
-    $authorization_code = NULL;
+    $one_time_login_link = FALSE;
+
+    if ($request->query->get('url_type') === 'forgot') {
+      $response_class = RedirectResponse::class;
+      $one_time_login_link = TRUE;
+    }
 
     try {
-      $authorization_code = $this->getAuthorizationCode($request);
       // The authentication can throw exceptions so their messages
       // will be exposed on the frontend.
-      $this->captureApi->authenticate($authorization_code, $request->getUri());
-
-      if ($request->query->get('url_type') === 'forgot') {
-        $access_token = $this->captureApi->getAccessToken()->getToken();
-
-        // Added token for not caching page.
-        $response_url->setRouteParameters([
-          'changePassword' => 'yes',
-          'token' => Html::getUniqueId($access_token),
-        ]);
-
-        $_SESSION['janrain']['capture']['access_token'] = $access_token;
-
-        $response_class = RedirectResponse::class;
-      }
+      $this->captureApi->authenticate($this->getAuthorizationCode($request), $request->getUri());
     }
     catch (\Throwable $e) {
-      // If code not verified.
-      if ($request->query->get('url_type') === 'forgot'
-        && !($e instanceof BadRequestHttpException)
-      ) {
-        $response_url->setRouteParameters([
-          'changePassword' => 'no',
-          'code' => $authorization_code,
-        ]);
-        $response_class = RedirectResponse::class;
-      }
-      else {
-        drupal_set_message($e->getMessage(), 'error');
-      }
-
-      unset($_SESSION['janrain']['capture']['access_token']);
+      drupal_set_message($e->getMessage(), 'error');
     }
 
-    if ($response_class === Response::class) {
-      unset($_SESSION['janrain']['capture']['access_token']);
+    // Form destination URL here since the "$request" is modified above.
+    $response_url = $this->getDestinationUrl($request);
+
+    // A user has used a one-time login link.
+    if ($one_time_login_link) {
+      // And the request ended with an error.
+      if (isset($e)) {
+        $response_url->setRouteParameter('changePassword', 'no');
+      }
+      else {
+        drupal_set_message($this->t('You have been successfully logged in via one-time login link.'));
+
+        // @todo Shouldn't we care about not exposing this value on a frontned?
+        $response_url->setRouteParameter('token', $this->captureApi->getAccessToken()->getToken());
+        $response_url->setRouteParameter('changePassword', 'yes');
+      }
     }
 
     return new $response_class($response_url->setAbsolute()->toString());

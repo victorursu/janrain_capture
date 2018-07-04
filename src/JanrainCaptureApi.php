@@ -90,6 +90,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
    * {@inheritdoc}
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(
     Client $http_client,

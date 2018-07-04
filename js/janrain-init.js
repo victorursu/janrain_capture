@@ -33,7 +33,6 @@ window.janrain = window.janrain || {};
 
   janrain.settings.appUrl = drupalSettings.janrain.capture.app_url;
   janrain.settings.tokenAction = drupalSettings.janrain.capture.token_action;
-  janrain.settings.accessToken = drupalSettings.janrain.access_token;
   janrain.settings.language = drupalSettings.path.currentLanguage;
   janrain.settings.tokenUrl = drupalSettings.janrain.capture.capture_server;
   /** @link https://docs.janrain.com/social/login-javascript-api/#providers */

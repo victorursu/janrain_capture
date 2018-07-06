@@ -158,6 +158,21 @@ function janrain_capture_ui_settings() {
     '#description' => t('For example, '.$_SERVER['SERVER_NAME']),
   );
 
+  $janrain_capture_engage = variable_get('janrain_capture_engage2', array());
+  $form['janrain_capture_engage2'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Engage Settings (optional)'),
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#collapsed' => !empty($janrain_capture_engage['engage_providers']) ? FALSE : TRUE,
+  );
+  $form['janrain_capture_engage2']['engage_providers'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Engage Providers'),
+    '#default_value' => !empty($janrain_capture_engage['engage_providers']) ? $janrain_capture_engage['engage_providers'] : '',
+    '#description' => t('This is a list of providers to use. Providers should be separated by commas. Example: one,two,three,four'),
+  );
+
   $janrain_capture_fields = variable_get('janrain_capture_fields2', array());
   $form['janrain_capture_fields2'] = array(
     '#type' => 'fieldset',

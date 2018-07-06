@@ -200,6 +200,7 @@ function janrain_capture_widget_js() {
   $janrain_settings = array_merge($janrain_settings, variable_get('janrain_capture_ui2', array()));
   $janrain_settings = array_merge($janrain_settings, variable_get('janrain_capture_federate2', array()));
   $janrain_settings = array_merge($janrain_settings, variable_get('janrain_capture_backplane2', array()));
+  $janrain_settings = array_merge($janrain_settings, variable_get('janrain_capture_engage2', array()));
 
   // module
   $settings["plex.moduleVersion"] = JANRAIN_CAPTURE_MODULE_VERSION;
@@ -222,6 +223,13 @@ function janrain_capture_widget_js() {
 
   // engage
   $settings["appUrl"]                     = $janrain_settings['engage_address'];
+  if (!empty($janrain_settings['engage_providers'])) {
+    $provider_names = explode(',', $janrain_settings['engage_providers']);
+
+    if ($provider_names) {
+      $settings["providers"] = json_encode($provider_names);
+    }
+  }
 
   // federate
   $settings["capture.federate"]           = $janrain_settings['capture_sso_enabled'];
@@ -346,6 +354,10 @@ EOD;
   janrain.settings.appUrl = '{$settings["appUrl"]}';
   janrain.settings.tokenAction = 'event';\n
 EOD;
+
+  if (isset($settings["providers"])){
+    $output .= "janrain.settings.providers = {$settings["providers"]}";
+  }
 
   // Backplane
   if ($settings["capture.backplane"]) {

@@ -75,7 +75,7 @@ Drupal.janrainCapture.prototype = {
 
 Drupal.behaviors.janrainCapture = {
   attach: function(context, settings) {
-    if (settings.janrainCapture.enforce) {
+    if (typeof(settings.janrainCapture) != 'undefined' && settings.janrainCapture.enforce) {
       // Modify all /user/login and /user/register links to use Capture.
       var ver = Drupal.settings.janrainCapture.ver;
       var bp = Drupal.settings.basePath;

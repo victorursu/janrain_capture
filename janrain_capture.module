@@ -1150,7 +1150,8 @@ function janrain_capture_user_view($account) {
 
   if($ver == JANRAIN_CAPTURE_VERSION_LEGACY
       || isset($janrain_capture_ui['profile_enabled']) == FALSE
-      || $janrain_capture_ui['profile_enabled'] != 1) {
+      || $janrain_capture_ui['profile_enabled'] != 1
+      || !janrain_capture_mapping_exists($account->uid)) {
     return $account;
   }
   $uuid = entity_metadata_wrapper('user', $account)->field_janrain_capture_uuid->value();

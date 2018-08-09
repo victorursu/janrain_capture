@@ -111,7 +111,9 @@ EOF;
         $this->captureApi->authenticate($authorization_code, $request->getUri());
       }
       catch (\Throwable $e) {
-        drupal_set_message($e->getMessage(), 'error');
+        if ($e->getMessage() !== '') {
+          drupal_set_message($e->getMessage(), 'error');
+        }
       }
 
       // A user has used a one-time login link.

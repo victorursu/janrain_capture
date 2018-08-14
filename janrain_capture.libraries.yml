@@ -7,5 +7,6 @@ janrain_init:
       type: external
       minified: true
   dependencies:
+    - core/jquery
     - core/drupalSettings
     - core/drupal

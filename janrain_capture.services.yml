@@ -1,0 +1,33 @@
+services:
+  janrain_capture.screen_loader_manager:
+    class: Drupal\janrain_capture\ScreenLoaderManager
+    arguments:
+    - '@config.factory'
+    - '@logger.factory'
+    - '@http_client'
+  janrain_capture.markup_builder:
+    class: Drupal\janrain_capture\JanrainMarkupBuilder
+    arguments:
+      - '@config.factory'
+      - '@janrain_capture.screen_loader_manager'
+  janrain_capture.capture_api:
+    class: Drupal\janrain_capture\JanrainCaptureApi
+    arguments:
+      - '@http_client'
+      - '@current_user'
+      - '@user.data'
+      - '@config.factory'
+      - '@module_handler'
+      - '@keyvalue.database'
+      - '@entity_type.manager'
+      - '@logger.factory'
+  janrain_capture.event_subscriber:
+    class: Drupal\janrain_capture\EventSubscriber
+    tags:
+      - name: event_subscriber
+  janrain_capture.route_enhancer:
+    class: Drupal\janrain_capture\RouteEnhancer
+    arguments:
+      - '@janrain_capture.capture_api'
+    tags:
+      - name: route_enhancer

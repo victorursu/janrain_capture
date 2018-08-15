@@ -1,0 +1,5 @@
+janrain_capture.settings:
+  title: 'Janrain Capture'
+  description: 'Configure Janrain Capture settings.'
+  parent: user.admin_index
+  route_name: janrain_capture.settings.capture

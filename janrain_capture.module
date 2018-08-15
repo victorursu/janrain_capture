@@ -1,0 +1,58 @@
+<?php
+
+/**
+ * @file
+ * Janrain Capture.
+ */
+
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_cron().
+ *
+ * @internal
+ */
+function janrain_capture_cron(): void {
+  /* @var \Drupal\janrain_capture\ScreenLoaderManager $screen_loader_manager */
+  $screen_loader_manager = \Drupal::service('janrain_capture.screen_loader_manager');
+
+  if ($screen_loader_manager->isRemote()) {
+    $screen_loader_manager->updateRemoteScreens();
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * @internal
+ */
+function janrain_capture_page_attachments(array &$attachments): void {
+  if (is_array($attachments['#attached'])) {
+    $attachments['#attached'] = array_merge_recursive($attachments['#attached'],
+        \Drupal::service('janrain_capture.markup_builder')->getPageAttachment());
+  }
+  else {
+    $attachments['#attached'] = \Drupal::service('janrain_capture.markup_builder')
+      ->getPageAttachment();
+  }
+}
+
+/**
+ * Implements hook_page_bottom().
+ *
+ * @internal
+ */
+function janrain_capture_page_bottom(array &$page_bottom): void {
+  $page_bottom += \Drupal::service('janrain_capture.markup_builder')->getScreenRenderArray('signin');
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view().
+ *
+ * @internal
+ */
+function janrain_capture_user_view(array &$build, UserInterface $user): void {
+  if (\Drupal::service('janrain_capture.capture_api')->isJanrainAccount($user)) {
+    $build += \Drupal::service('janrain_capture.markup_builder')->getScreenRenderArray('public-profile');
+  }
+}

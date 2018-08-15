@@ -1,0 +1,30 @@
+janrain_capture.oauth:
+  path: '/janrain_capture/oauth'
+  defaults:
+    _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::login'
+  requirements:
+    _access: 'TRUE'
+janrain_capture.forgot:
+  path: '/janrain_capture/forgot'
+  defaults:
+    _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::forgot'
+  requirements:
+        _access: 'TRUE'
+janrain_capture.simple_logout:
+  path: '/janrain_capture/logout'
+  defaults:
+    _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::logout'
+  requirements:
+      _access: 'TRUE'
+janrain_capture.settings.capture:
+  path: '/admin/config/people/janrain-capture/capture-settings'
+  defaults:
+    _form: '\Drupal\janrain_capture\Form\JanrainCaptureSettingsForm'
+  requirements:
+    _permission: 'administer site configuration'
+janrain_capture.settings.screens:
+  path: '/admin/config/people/janrain-capture/screens-settings'
+  defaults:
+    _form: '\Drupal\janrain_capture\Form\JanrainScreensSettingsForm'
+  requirements:
+    _permission: 'administer site configuration'

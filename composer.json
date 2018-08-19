@@ -1,0 +1,43 @@
+{
+    "name": "skwashd/janrain_capture",
+    "description": "Integrates Janrain Registration",
+    "type": "drupal-module",
+    "homepage": "https://drupal.org/project/janrain_capture",
+    "authors": [
+        {
+            "name": "Dave Hall (skwashd)",
+            "email": "skwashd@gmail.com",
+            "homepage": "https://davehall.com.au/",
+            "role": "Developer"
+        },
+        {
+            "name": "Dmitriy Palamarchuk",
+            "email": "dmitriy.palamarchuk@ffwagency.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Mikhail Sokolovskiy (l0ke)",
+            "email": "mikhail.sokolovskiy@ffwagency.com",
+            "homepage": "https://www.drupal.org/u/l0ke",
+            "role": "Developer"
+        },
+        {
+            "name": "Sergii Bondarenko (broken)",
+            "email": "broken@firstvector.org",
+            "homepage": "https://www.drupal.org/u/broken",
+            "role": "Developer"
+        },
+        {
+            "name": "Yaroslav Kharchenko (undertext)",
+            "email": "undertext.2010@gmail.com",
+            "homepage": "https://www.drupal.org/u/undertext",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://drupal.org/project/issues/janrain_capture",
+        "source": "https://cgit.drupalcode.org/janrain_capture"
+    },
+    "license": "GPL-2.0-or-later",
+    "minimum-stability": "dev"
+}

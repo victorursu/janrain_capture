@@ -16,6 +16,12 @@ janrain_capture.simple_logout:
     _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::logout'
   requirements:
       _access: 'TRUE'
+janrain_capture.xdcomm:
+  path: '/janrain_capture/xdcomm'
+  defaults:
+    _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::xdcomm'
+  requirements:
+      _access: 'TRUE'
 janrain_capture.settings.capture:
   path: '/admin/config/people/janrain-capture/capture-settings'
   defaults:

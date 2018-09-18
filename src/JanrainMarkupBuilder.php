@@ -60,7 +60,7 @@ class JanrainMarkupBuilder {
         ->toString();
     }
     // Federate.
-    $settings['capture']['federate_xd_reciever'] = $base_url . $base_path . drupal_get_path('module', 'janrain_capture') . '/xdcomm.html';
+    $settings['capture']['federate_xd_reciever'] = $base_url . $base_path . drupal_get_path('module', 'janrain_capture') . '/janrain_capture/xdcomm';
     $settings['capture']['stylesheets'][] = file_create_url($settings['screens']['folder'] . '/stylesheets/janrain.css');
     // @todo Investigate docs for more info about federateSupportedSegments.
     if (isset($settings['capture']['federate_supported_segments'])) {

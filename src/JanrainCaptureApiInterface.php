@@ -2,6 +2,7 @@
 
 namespace Drupal\janrain_capture;
 
+use Drupal\Core\Url;
 use Drupal\janrain_capture\User\JanrainUserProfile;
 use Drupal\user\UserInterface;
 use Drupal\janrain_capture\Authentication\AccessToken;
@@ -36,7 +37,7 @@ interface JanrainCaptureApiInterface {
    * @throws \Drupal\janrain_capture\Exception\JanrainApiCallError
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function authenticate(string $auth_code, string $redirect_uri): UserInterface;
+  public function authenticate(string $auth_code, string $redirect_uri): ?Url;
 
   /**
    * Returns an access token from the database and prolongs it automatically.

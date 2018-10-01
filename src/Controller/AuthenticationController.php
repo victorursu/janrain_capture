@@ -75,6 +75,9 @@ class AuthenticationController extends ControllerBase {
 </html>
 EOF;
 
+    return new Response($output);
+  }
+
   /**
    * Cross site receiver page.
    */

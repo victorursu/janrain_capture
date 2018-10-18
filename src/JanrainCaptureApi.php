@@ -8,6 +8,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\KeyValueStore\KeyValueDatabaseFactory;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Url;
 use Drupal\janrain_capture\Authentication\AccessToken;
 use Drupal\janrain_capture\Authentication\RefreshToken;
 use Drupal\janrain_capture\Exception\JanrainApiCallError;
@@ -109,6 +110,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
     $this->clientId = $config['client_id'] ?? '';
     $this->clientSecret = $config['client_secret'] ?? '';
     $this->captureAddress = $config['capture_server'] ?? '';
+    $this->mesageCountryRestricted = $config['validate']['mesage_country_restricted'] ?? '';
 
     $this->logger = $logger_factory->get('janrain_capture');
     $this->userData = $user_data;
@@ -122,7 +124,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
   /**
    * {@inheritdoc}
    */
-  public function authenticate(string $auth_code, string $redirect_uri): UserInterface {
+  public function authenticate(string $auth_code, string $redirect_uri): ?Url {
     $token = $this->getToken(static::GRANT_TYPE_AUTHORIZATION_CODE, [
       'code' => $auth_code,
       'redirect_uri' => $redirect_uri,
@@ -161,7 +163,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
       $account = $this->userStorage->load(reset($accounts));
     }
 
-    user_login_finalize($account);
+    $redirect = user_login_finalize($account);
 
     // Update the current user account in memory. This needed to provide
     // a correct user account for calls to "getAccessToken()" method in
@@ -180,7 +182,7 @@ class JanrainCaptureApi implements JanrainCaptureApiInterface {
     // Save the token to the database.
     $this->cache($token);
 
-    return $account;
+    return $redirect;
   }
 
   /**

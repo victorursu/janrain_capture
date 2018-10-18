@@ -43,7 +43,9 @@ function janrain_capture_page_attachments(array &$attachments): void {
  * @internal
  */
 function janrain_capture_page_bottom(array &$page_bottom): void {
-  $page_bottom += \Drupal::service('janrain_capture.markup_builder')->getScreenRenderArray('signin');
+  if (\Drupal::currentUser()->isAnonymous()) {
+    $page_bottom += \Drupal::service('janrain_capture.markup_builder')->getScreenRenderArray('signin');
+  }
 }
 
 /**

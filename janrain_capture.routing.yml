@@ -10,6 +10,18 @@ janrain_capture.forgot:
     _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::forgot'
   requirements:
         _access: 'TRUE'
+janrain_capture.view_profile:
+  path: '/user/view'
+  defaults:
+    _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::viewProfile'
+  requirements:
+    _role: 'authenticated'
+janrain_capture.edit_profile:
+  path: '/user/profile'
+  defaults:
+    _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::editProfile'
+  requirements:
+    _role: 'authenticated'
 janrain_capture.simple_logout:
   path: '/janrain_capture/logout'
   defaults:

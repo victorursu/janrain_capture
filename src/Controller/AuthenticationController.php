@@ -62,6 +62,40 @@ class AuthenticationController extends ControllerBase {
   }
 
   /**
+   * Edit profile page.
+   */
+  public function editProfile() {
+    $access_token = $this->captureApi->getAccessToken();
+    $return = $this->markupBuilder->getScreenRenderArray('edit-profile');
+    $return['janrain_capture_edit_js'] = [
+      '#markup' => '<script>var access_token = "' . $access_token . '";</script>',
+      '#allowed_tags' => ['script'],
+      '#cache' => [
+        'contexts' => [
+          'user',
+        ],
+        'max-age' => 60,
+      ],
+    ];
+    return $return;
+  }
+
+  /**
+   * View profile page.
+   */
+  public function viewProfile() {
+    // Get current user's UUID and compare it against UUID from the parameter
+    $current_janrain_uuid = $this->captureApi->getUserProfile()->getUuid();
+
+    if ($current_janrain_uuid == $_GET['uuid']) {
+      return $this->markupBuilder->getScreenRenderArray('public-profile');
+    }
+    else {
+      throw new \InvalidArgumentException('An invalid uuid is given.');
+    }
+  }
+
+  /**
    * Logout user from the system.
    */
   public function logout() {
@@ -109,11 +143,14 @@ EOF;
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The incoming HTTP request.
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   The response.
    */
-  public function login(Request $request): Response {
+  public function login(Request $request) {
+    // We don't have to login user if this is forgot password screen request.
+    $config = \Drupal::config('capture');
+    if ($request->get('url_type') === 'forgot' && !$config->get('forgot_as_one_time_login')) {
+      return $this->forgot();
+    }
+
     // Usually, this controller should return a URI to redirect a user to.
     // This is valid for authentication. When the password reset requested
     // a user will receive an email with the link and, opening it in a

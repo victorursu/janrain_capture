@@ -7,6 +7,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Drupal\Core\Url;
 
 /**
  * The event subscriber.
@@ -51,7 +52,14 @@ class EventSubscriber implements EventSubscriberInterface {
           // Override globals to get the correct value from "getUri()".
           $request->overrideGlobals();
 
-          $event->setResponse(new RedirectResponse($request->getUri(), RedirectResponse::HTTP_MOVED_PERMANENTLY));
+          // ToDo: can't figure out why /user/ID and user edit pages are not working,
+          // created another pages for profile view and edit as workaround
+          // $event->setResponse(new RedirectResponse($request->getUri(), RedirectResponse::HTTP_MOVED_PERMANENTLY));.
+          $event->setResponse(new RedirectResponse(
+            Url::fromRoute('janrain_capture.view_profile', ['uuid' => $uuid])->toString(),
+            RedirectResponse::HTTP_MOVED_PERMANENTLY
+          ));
+
         }
       }
     }

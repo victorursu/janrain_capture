@@ -39,6 +39,12 @@ janrain_capture.settings:
         federate_supported_segments:
           type: string
           label: 'Federate supported segments'
+        federate_supported_segments:
+          type: string
+          label: 'Federate supported segments'
+        forgot_as_one_time_login:
+          type: boolean
+          label: Use forgot password as one time login
     screens:
       type: mapping
       label: 'Screens'

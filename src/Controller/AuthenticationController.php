@@ -84,7 +84,15 @@ class AuthenticationController extends ControllerBase {
    * View profile page.
    */
   public function viewProfile() {
-    return $this->markupBuilder->getScreenRenderArray('public-profile');
+    // Get current user's UUID and compare it against UUID from the parameter
+    $current_janrain_uuid = $this->captureApi->getUserProfile()->getUuid();
+
+    if ($current_janrain_uuid == $_GET['uuid']) {
+      return $this->markupBuilder->getScreenRenderArray('public-profile');
+    }
+    else {
+      throw new \InvalidArgumentException('An invalid uuid is given.');
+    }
   }
 
   /**

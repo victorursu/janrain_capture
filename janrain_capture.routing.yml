@@ -14,14 +14,16 @@ janrain_capture.view_profile:
   path: '/user/view'
   defaults:
     _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::viewProfile'
+    _title: 'My account'
   requirements:
-    _role: 'authenticated'
+    _user_is_logged_in: 'TRUE'
 janrain_capture.edit_profile:
   path: '/user/profile'
   defaults:
     _controller: '\Drupal\janrain_capture\Controller\AuthenticationController::editProfile'
+    _title: 'Edit Profile'
   requirements:
-    _role: 'authenticated'
+    _user_is_logged_in: 'TRUE'
 janrain_capture.simple_logout:
   path: '/janrain_capture/logout'
   defaults:

@@ -70,6 +70,12 @@ class AuthenticationController extends ControllerBase {
     $return['janrain_capture_edit_js'] = [
       '#markup' => '<script>var access_token = "' . $access_token . '";</script>',
       '#allowed_tags' => ['script'],
+      '#cache' => [
+        'contexts' => [
+          'user',
+        ],
+        'max-age' => 60,
+      ],
     ];
     return $return;
   }

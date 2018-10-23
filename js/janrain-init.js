@@ -105,7 +105,6 @@ window.janrain = window.janrain || {};
       localStorage.removeItem('janrainLastAuthMethod_Expires');
       localStorage.removeItem('janrainCaptureProfileData');
       localStorage.removeItem('janrainCaptureToken');
-      JANRAIN.SSO.end_session();
     }
   };
 
